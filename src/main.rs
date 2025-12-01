@@ -59,7 +59,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         _ => return Err(format!("Day {day} task {task} is doesn't exist").into()),
     };
 
-    let path = format!("./data/day{day}.txt");
+    let path = format!("./data/day{day:0>2}.txt");
 
     // Solve task, and measure runtime
     let start_time = Instant::now();
