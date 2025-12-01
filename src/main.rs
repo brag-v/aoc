@@ -56,7 +56,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         ("11", "2") => day11::task2,
         ("12", "1") => day12::task1,
         ("12", "2") => day12::task2,
-        _ => return Err(format!("Day {day} task {task} is doesn't exist").into()),
+        _ => return Err(format!("Day {day} task {task} doesn't exist").into()),
     };
 
     let path = format!("./data/day{day:0>2}.txt");
