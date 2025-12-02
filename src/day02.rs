@@ -69,27 +69,15 @@ pub fn task1(input: &str) -> String {
 
 fn contains_repeats(num: &u64) -> bool {
     let binding = num.to_string();
-    let bytes = binding.as_bytes();
-    'a: for seq_len in 1..=(bytes.len() / 2) {
-        if !bytes.len().is_multiple_of(seq_len) {
-            continue;
-        }
-        for i in 0..seq_len {
-            let mut j = i + seq_len;
-            while j < bytes.len() {
-                if bytes[i] != bytes[j] {
-                    continue 'a;
-                }
-                j += seq_len;
-            }
-        }
-        return true;
-    }
-    false
+    let sequence = binding.as_bytes();
+    (1..=(sequence.len() / 2)).any(|pattern_len| {
+        sequence.len().is_multiple_of(pattern_len)
+            && (pattern_len..sequence.len()).all(|i| sequence[i] == sequence[i - pattern_len])
+    })
 }
 
 pub fn task2(input: &str) -> String {
-    // looks very inefficient, but takes 8 ms on real input using optimized build 
+    // looks very inefficient, but takes 6 ms on real input using optimized build
     get_ranges(input)
         .par_bridge()
         .map(|(start, end)| {
