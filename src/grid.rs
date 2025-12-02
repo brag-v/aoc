@@ -128,7 +128,7 @@ pub struct Map<T> {
 #[derive(Debug)]
 pub enum ParseMapError {
     NotSquare,
-    ParseCharError,
+    ParseCharError(char),
 }
 
 impl<T> Map<T> {
@@ -144,21 +144,30 @@ impl<T> Map<T> {
         }
     }
 
-    pub fn try_from_str(input: &str, mapping: fn(char) -> T) -> Result<Map<T>, ParseMapError> {
+    pub fn try_from_str(
+        input: &str,
+        mapping: fn(char) -> Option<T>,
+    ) -> Result<Map<T>, ParseMapError> {
         if input.is_empty() {
             return Ok(Map::zero_sized());
         }
+
         let width = input.lines().next().unwrap().len();
-        let height = input.len() / width;
+
+        if !input.lines().all(|line| line.len() == width) {
+            return Err(ParseMapError::NotSquare);
+        }
+
         let map = input
             .lines()
             .flat_map(|line| {
-                // if line.len() != width {
-                //     return Err(ParseMapError::NotSquare);
-                // }
-                line.chars().map(mapping)
+                line.chars()
+                    .map(|c| mapping(c).ok_or(ParseMapError::ParseCharError(c)))
             })
-            .collect::<Box<[T]>>();
+            .collect::<Result<Box<[T]>, ParseMapError>>()?;
+
+        let height = input.lines().count();
+
         Ok(Map { map, width, height })
     }
 
