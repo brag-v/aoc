@@ -1,3 +1,5 @@
+use rayon::iter::{IntoParallelIterator, ParallelBridge, ParallelIterator};
+
 fn get_ranges(input: &str) -> impl Iterator<Item = (u64, u64)> {
     input
         .split(',')
@@ -52,6 +54,7 @@ fn double_num_sum(range: (u64, u64)) -> u64 {
     let mut total = double_num_sum_single_magnitude(range.0, 10_u64.pow(log_low + 1) - 1)
         + double_num_sum_single_magnitude(10_u64.pow(log_high), range.1);
     for mid_log in (log_low + 1)..log_high {
+        // neither test nor actual input ever reaches here
         total += double_num_sum_single_magnitude(10_u64.pow(mid_log), 10_u64.pow(mid_log + 1) - 1);
     }
     total
@@ -64,6 +67,37 @@ pub fn task1(input: &str) -> String {
         .to_string()
 }
 
-pub fn task2(_input: &str) -> String {
-    todo!("Day 2 task 2")
+fn contains_repeats(num: &u64) -> bool {
+    let binding = num.to_string();
+    let bytes = binding.as_bytes();
+    'a: for seq_len in 1..=(bytes.len() / 2) {
+        if !bytes.len().is_multiple_of(seq_len) {
+            continue;
+        }
+        for i in 0..seq_len {
+            let mut j = i + seq_len;
+            while j < bytes.len() {
+                if bytes[i] != bytes[j] {
+                    continue 'a;
+                }
+                j += seq_len;
+            }
+        }
+        return true;
+    }
+    false
+}
+
+pub fn task2(input: &str) -> String {
+    // looks very inefficient, but takes 8 ms on real input using optimized build 
+    get_ranges(input)
+        .par_bridge()
+        .map(|(start, end)| {
+            (start..=end)
+                .into_par_iter()
+                .filter(contains_repeats)
+                .sum::<u64>()
+        })
+        .sum::<u64>()
+        .to_string()
 }
