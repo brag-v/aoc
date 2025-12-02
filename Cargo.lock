@@ -3,7 +3,7 @@
 version = 4
 
 [[package]]
-name = "advent_21"
+name = "aoc"
 version = "0.1.0"
 dependencies = [
  "rayon",
