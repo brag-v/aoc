@@ -2,9 +2,9 @@ fn max_subseqence(digits: &str, digit_count: u32) -> u64 {
     let digits = digits.as_bytes();
     let mut total = 0;
     let mut progress = 0;
-    for digit in (0..digit_count).rev() {
+    for magnitude in (0..digit_count).rev() {
         let mut max = 0;
-        for (i, digit) in digits[..(digits.len() - digit as usize)]
+        for (i, digit) in digits[..(digits.len() - magnitude as usize)]
             .iter()
             .enumerate()
             .skip(progress)
@@ -14,7 +14,7 @@ fn max_subseqence(digits: &str, digit_count: u32) -> u64 {
                 progress = i + 1;
             }
         }
-        total += 10_u64.pow(digit) * u64::from(max - b'0');
+        total += 10_u64.pow(magnitude) * u64::from(max - b'0');
     }
     total
 }

@@ -67,7 +67,7 @@ pub fn task1(input: &str) -> String {
         .to_string()
 }
 
-fn contains_repeats(num: &u64) -> bool {
+fn contains_repeats(num: u64) -> bool {
     let binding = num.to_string();
     let sequence = binding.as_bytes();
     (1..=(sequence.len() / 2)).any(|pattern_len| {
@@ -83,7 +83,7 @@ pub fn task2(input: &str) -> String {
         .map(|(start, end)| {
             (start..=end)
                 .into_par_iter()
-                .filter(contains_repeats)
+                .filter(|num| contains_repeats(*num))
                 .sum::<u64>()
         })
         .sum::<u64>()
