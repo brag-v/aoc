@@ -2,96 +2,67 @@
 //! a common format for advent of code tasks
 #![allow(dead_code)]
 
-use std::ops::{Index, IndexMut};
+use std::ops::{Add, Index, IndexMut};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd)]
-pub struct Coord {
-    pub x: usize,
-    pub y: usize,
+pub struct Point2D {
+    pub x: isize,
+    pub y: isize,
 }
 
-impl Coord {
-    /// return a list of adjecent coordinates within the bounds (0..width) and (0..height)
-    pub fn adjacent(&self, width_bound: usize, height_bound: usize) -> Vec<Coord> {
-        let mut a = Vec::with_capacity(4);
-        if self.x > 0 {
-            a.push(Coord {
-                x: self.x - 1,
-                y: self.y,
-            });
-        }
-        if self.y > 0 {
-            a.push(Coord {
-                x: self.x,
-                y: self.y - 1,
-            });
-        }
-        if self.x < width_bound - 1 {
-            a.push(Coord {
-                x: self.x + 1,
-                y: self.y,
-            });
-        }
-        if self.y < height_bound - 1 {
-            a.push(Coord {
-                x: self.x,
-                y: self.y + 1,
-            });
-        }
-        a
+impl Point2D {
+    pub fn adjecent_with_offsets(
+        &self,
+        width_bound: usize,
+        height_bound: usize,
+        offsets: &[Point2D],
+    ) -> impl Iterator<Item = Point2D> {
+        let width_bound = width_bound as isize;
+        let height_bound = height_bound as isize;
+        offsets
+            .iter()
+            .map(|offset| *self + *offset)
+            // TODO: move filter to other function?
+            .filter(move |adj| adj.x >= 0 && adj.x < width_bound && adj.y >= 0 && adj.y < height_bound)
     }
 
-    pub fn adjecent_with_diagonals(&self, width_bound: usize, height_bound: usize) -> Vec<Coord> {
-        let mut a = Vec::with_capacity(8);
-        if self.x > 0 {
-            a.push(Coord {
-                x: self.x - 1,
-                y: self.y,
-            });
-        }
-        if self.y > 0 {
-            a.push(Coord {
-                x: self.x,
-                y: self.y - 1,
-            });
-        }
-        if self.x < width_bound - 1 {
-            a.push(Coord {
-                x: self.x + 1,
-                y: self.y,
-            });
-        }
-        if self.y < height_bound - 1 {
-            a.push(Coord {
-                x: self.x,
-                y: self.y + 1,
-            });
-        }
-        if self.y > 0 && self.x > 0 {
-            a.push(Coord {
-                x: self.x - 1,
-                y: self.y - 1,
-            });
-        }
-        if self.x < width_bound - 1 && self.y > 0 {
-            a.push(Coord {
-                x: self.x + 1,
-                y: self.y - 1,
-            });
-        }
-        if self.x > 0 && self.y < height_bound - 1 {
-            a.push(Coord {
-                x: self.x - 1,
-                y: self.y + 1,
-            });
-        }
-        if self.x < width_bound - 1 && self.y < height_bound - 1 {
-            a.push(Coord {
-                x: self.x + 1,
-                y: self.y + 1,
-            });
-        }
-        a
+    /// return a list of adjecent coordinates within the bounds (0..width) and (0..height)
+    pub fn adjacent(
+        &self,
+        width_bound: usize,
+        height_bound: usize,
+    ) -> impl Iterator<Item = Point2D> {
+        self.adjecent_with_offsets(
+            width_bound,
+            height_bound,
+            &[
+                Point2D { x: -1, y: 0 },
+                Point2D { x: 0, y: -1 },
+                Point2D { x: 0, y: 1 },
+                Point2D { x: 1, y: 0 },
+            ],
+        )
+    }
+
+    pub fn adjecent_with_diagonals(
+        &self,
+        width_bound: usize,
+        height_bound: usize,
+    ) -> impl Iterator<Item = Point2D> {
+        self.adjecent_with_offsets(
+            width_bound,
+            height_bound,
+            &[
+                Point2D { x: -1, y: -1 },
+                Point2D { x: -1, y: 0 },
+                Point2D { x: -1, y: 1 },
+                Point2D { x: 0, y: -1 },
+                Point2D { x: 0, y: 1 },
+                Point2D { x: 1, y: -1 },
+                Point2D { x: 1, y: 0 },
+                Point2D { x: 1, y: 1 },
+            ],
+        )
     }
 
     pub fn manhattan_distance(&self, other: &Self) -> usize {
@@ -100,12 +71,23 @@ impl Coord {
 }
 
 // TODO: turn into try from ?
-impl From<&str> for Coord {
-    fn from(value: &str) -> Coord {
+impl From<&str> for Point2D {
+    fn from(value: &str) -> Point2D {
         let (x, y) = value.split_once(',').unwrap();
-        Coord {
+        Point2D {
             x: x.parse().unwrap(),
             y: y.parse().unwrap(),
+        }
+    }
+}
+
+impl Add<Point2D> for Point2D {
+    type Output = Self;
+
+    fn add(self, other: Self) -> Self::Output {
+        Point2D {
+            x: self.x + other.x,
+            y: self.y + other.y,
         }
     }
 }
@@ -118,9 +100,10 @@ pub enum Direction {
     East,
 }
 
+// TODO: bitvec for Map<bool>
 #[derive(Debug)]
 pub struct Map<T> {
-    map: Box<[T]>,
+    values: Box<[T]>,
     width: usize,
     height: usize,
 }
@@ -133,12 +116,16 @@ pub enum ParseMapError {
 
 impl<T> Map<T> {
     pub fn new(map: Box<[T]>, width: usize, height: usize) -> Self {
-        Self { map, width, height }
+        Self {
+            values: map,
+            width,
+            height,
+        }
     }
 
     fn zero_sized() -> Map<T> {
         Map {
-            map: Box::new([]),
+            values: Box::new([]),
             width: 0,
             height: 0,
         }
@@ -168,7 +155,11 @@ impl<T> Map<T> {
 
         let height = input.lines().count();
 
-        Ok(Map { map, width, height })
+        Ok(Map {
+            values: map,
+            width,
+            height,
+        })
     }
 
     pub fn height(&self) -> usize {
@@ -180,7 +171,7 @@ impl<T> Map<T> {
     }
 
     pub fn row(&self, index: usize) -> &[T] {
-        &self.map[(index * self.width)..((index + 1) * (self.width))]
+        &self.values[(index * self.width)..((index + 1) * (self.width))]
     }
 
     // pub fn col(&self, index: usize) -> &[T] {
@@ -203,24 +194,40 @@ impl<T> Map<T> {
 impl<T: Clone> Map<T> {
     pub fn filled_with(value: T, width: usize, height: usize) -> Map<T> {
         Map {
-            map: Box::from(vec![value; width * height]),
+            values: Box::from(vec![value; width * height]),
             width,
             height,
         }
     }
 }
 
-impl<T> Index<Coord> for Map<T> {
+impl<T> Index<Point2D> for Map<T> {
     type Output = T;
 
-    fn index(&self, index: Coord) -> &Self::Output {
-        &self.map[index.y * self.width + index.x]
+    fn index(&self, index: Point2D) -> &Self::Output {
+        let x: usize = index
+            .x
+            .try_into()
+            .unwrap_or_else(|_| panic!("index {index:?} out of bounds"));
+        let y: usize = index
+            .y
+            .try_into()
+            .unwrap_or_else(|_| panic!("index {index:?} out of bounds"));
+        &self.values[y * self.width + x]
     }
 }
 
-impl<T> IndexMut<Coord> for Map<T> {
-    fn index_mut(&mut self, index: Coord) -> &mut T {
-        &mut self.map[index.y * self.width + index.x]
+impl<T> IndexMut<Point2D> for Map<T> {
+    fn index_mut(&mut self, index: Point2D) -> &mut T {
+        let x: usize = index
+            .x
+            .try_into()
+            .unwrap_or_else(|_| panic!("index {index:?} out of bounds"));
+        let y: usize = index
+            .y
+            .try_into()
+            .unwrap_or_else(|_| panic!("index {index:?} out of bounds"));
+        &mut self.values[y * self.width + x]
     }
 }
 
