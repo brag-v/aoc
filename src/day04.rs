@@ -1,7 +1,7 @@
 use crate::grid::{Map, Point2D};
 
 fn count_accessable(map: &Map<bool>) -> usize {
-    let mut total = 0;
+    let mut count = 0;
     for y in 0..map.height() {
         for x in 0..map.width() {
             let pos = Point2D {
@@ -15,11 +15,11 @@ fn count_accessable(map: &Map<bool>) -> usize {
                     .count()
                     < 4
             {
-                total += 1;
+                count += 1;
             }
         }
     }
-    total
+    count
 }
 
 pub fn task1(input: &str) -> String {
@@ -32,8 +32,8 @@ pub fn task1(input: &str) -> String {
     count_accessable(&map).to_string()
 }
 
-fn count_removable(map: &mut Map<bool>) -> usize {
-    let mut total = 0;
+fn remove_and_count(map: &mut Map<bool>) -> usize {
+    let mut count = 0;
     loop {
         let mut changed = false;
         for y in 0..map.height() {
@@ -51,12 +51,12 @@ fn count_removable(map: &mut Map<bool>) -> usize {
                 {
                     map[pos] = false;
                     changed = true;
-                    total += 1;
+                    count += 1;
                 }
             }
         }
         if !changed {
-            return total;
+            return count;
         }
     }
 }
@@ -68,5 +68,5 @@ pub fn task2(input: &str) -> String {
         _ => None,
     })
     .unwrap();
-    count_removable(&mut map).to_string()
+    remove_and_count(&mut map).to_string()
 }
