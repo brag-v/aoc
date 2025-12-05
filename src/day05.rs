@@ -9,30 +9,37 @@ fn get_ranges_and_ids(input: &str) -> (Vec<(u64, u64)>, Vec<u64>) {
     (ranges, ids)
 }
 
-pub fn task1(input: &str) -> String {
-    let (ranges, ids) = get_ranges_and_ids(input);
+fn valid_id_count(ids: &[u64], ranges: &[(u64, u64)]) -> u64 {
+    // TODO: sort range and do some kind of binary search?
+    // O(r*log r + i*log r) vs O(i*r)
     let mut count = 0;
     for id in ids {
-        for range in &ranges {
-            if range.0 <= id && id <= range.1 {
+        for range in ranges {
+            if range.0 <= *id && *id <= range.1 {
                 count += 1;
                 break;
             }
         }
     }
-    count.to_string()
+    count
+}
+
+pub fn task1(input: &str) -> String {
+    let (ranges, ids) = get_ranges_and_ids(input);
+    valid_id_count(&ids, &ranges).to_string()
 }
 
 fn possible_valid_id_count(ranges: &mut [(u64, u64)]) -> u64 {
-    ranges.sort_unstable();
+    ranges.sort_unstable_by_key(|range| range.0);
     let mut progress = 0;
     let mut count = 0;
     for range in ranges {
         if progress < range.0 {
-            count += 1;
-            progress = range.0;
-        }
-        if progress < range.1 {
+            // add whole range
+            count += range.1 - range.0;
+            progress = range.1;
+        } else if progress < range.1 {
+            // add rest of range
             count += range.1 - progress;
             progress = range.1;
         }
