@@ -103,7 +103,6 @@ fn test_day4_task1() {
     )
 }
 
-
 #[test]
 fn test_day4_task2() {
     assert_task!(
@@ -119,5 +118,43 @@ fn test_day4_task2() {
 .@@@@@@@@.
 @.@.@@@.@.",
         "43"
+    )
+}
+
+#[test]
+fn test_day5_task1() {
+    assert_task!(
+        day05::task1,
+        "3-5
+10-14
+16-20
+12-18
+
+1
+5
+8
+11
+17
+32",
+        "3"
+    )
+}
+
+#[test]
+fn test_day5_task2() {
+    assert_task!(
+        day05::task2,
+"3-5
+10-14
+16-20
+12-18
+
+1
+5
+8
+11
+17
+32",
+        "14"
     )
 }
