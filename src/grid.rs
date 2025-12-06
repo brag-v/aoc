@@ -23,7 +23,9 @@ impl Point2D {
             .iter()
             .map(|offset| *self + *offset)
             // TODO: move filter to other function?
-            .filter(move |adj| adj.x >= 0 && adj.x < width_bound && adj.y >= 0 && adj.y < height_bound)
+            .filter(move |adj| {
+                adj.x >= 0 && adj.x < width_bound && adj.y >= 0 && adj.y < height_bound
+            })
     }
 
     /// return a list of adjecent coordinates within the bounds (0..width) and (0..height)

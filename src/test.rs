@@ -144,7 +144,7 @@ fn test_day5_task1() {
 fn test_day5_task2() {
     assert_task!(
         day05::task2,
-"3-5
+        "3-5
 10-14
 16-20
 12-18
@@ -157,4 +157,29 @@ fn test_day5_task2() {
 32",
         "14"
     )
+}
+
+#[test]
+fn test_day6_task1() {
+    assert_task!(
+        day06::task1,
+        "123 328  51 64 
+45 64  387 23 
+6 98  215 314
+*   +   *   +",
+        "4277556"
+    );
+}
+
+
+#[test]
+fn test_day6_task2() {
+    assert_task!(
+        day06::task2,
+        "123 328  51 64 
+ 45 64  387 23 
+  6 98  215 314
+*   +   *   +  ",
+        "3263827"
+    );
 }

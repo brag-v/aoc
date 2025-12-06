@@ -63,8 +63,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Solve task, and measure runtime
     let start_time = Instant::now();
-    let input = read_to_string(path)?;
-    let result = solver(input.trim_end());
+    let string_input = read_to_string(path)?;
+    let input = string_input.strip_suffix("\n").unwrap_or(&string_input);
+    let result = solver(input);
     let runtime = start_time.elapsed();
 
     if result.contains('\n') {
