@@ -36,7 +36,7 @@ fn possible_valid_id_count(ranges: &mut [(u64, u64)]) -> u64 {
     for range in ranges {
         if progress < range.0 {
             // add whole range
-            count += range.1 - range.0;
+            count += range.1 - range.0 + 1;
             progress = range.1;
         } else if progress < range.1 {
             // add rest of range
