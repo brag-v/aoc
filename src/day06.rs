@@ -51,12 +51,12 @@ pub fn task1(input: &str) -> String {
 }
 
 pub fn task2(input: &str) -> String {
-    let lines: Vec<&str> = input.lines().collect();
-    let mut num_lines = lines[..(lines.len() - 1)]
+    let lines: Box<[&str]> = input.lines().collect();
+    let num_lines = lines[..(lines.len() - 1)]
         .iter()
-        .map(|line| line.chars())
+        .map(|line| line.as_bytes())
         .collect::<Box<_>>();
-    let ops = lines[lines.len() - 1].chars();
+    let ops = lines[lines.len() - 1].as_bytes();
 
     let mut total: u64 = 0;
 
@@ -64,25 +64,25 @@ pub fn task2(input: &str) -> String {
     let mut subtotal = 0;
     let mut op = Operator::Add;
 
-    for op_char in ops {
+    for (i, op_char) in ops.iter().enumerate() {
         // check if start of new column
         // and add subtotal of previous column to total
-        if op_char == '+' {
+        if *op_char == b'+' {
             op = Operator::Add;
             total += subtotal;
             subtotal = 0;
-        } else if op_char == '*' {
+        } else if *op_char == b'*' {
             op = Operator::Multiply;
             total += subtotal;
             subtotal = 1;
         }
-        // calculate column number 
+        // calculate column number
         let mut num = 0;
-        for num_line in num_lines.iter_mut() {
-            let digit = num_line.next().unwrap();
+        for num_line in &num_lines {
+            let digit = num_line[i];
 
-            if let Some(digit) = digit.to_digit(10) {
-                num = num * 10 + digit as u64;
+            if digit.is_ascii_digit() {
+                num = num * 10 + u64::from(digit - b'0');
             }
         }
         // add column to subtotal
@@ -90,7 +90,7 @@ pub fn task2(input: &str) -> String {
             Operator::Add => subtotal += num,
             Operator::Multiply => {
                 if num > 0 {
-                    subtotal *= num
+                    subtotal *= num;
                 }
             }
         }
