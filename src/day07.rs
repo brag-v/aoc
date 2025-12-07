@@ -18,7 +18,6 @@ fn split_count(input: &str) -> (u64, u64) {
 
     let mut split_count = 0;
     for line in lines {
-        debug_assert!(line.len() == width);
         // we're updating the bounds for the next iteration
         #[allow(clippy::mut_range_bound)]
         for i in start..=end {

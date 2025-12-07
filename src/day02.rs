@@ -67,13 +67,24 @@ pub fn task1(input: &str) -> String {
         .to_string()
 }
 
-fn contains_repeats(num: u64) -> bool {
+fn contains_repeats(num: u64, possible_lengths: &[usize]) -> bool {
     let binding = num.to_string();
     let sequence = binding.as_bytes();
-    (1..=(sequence.len() / 2)).any(|pattern_len| {
-        sequence.len().is_multiple_of(pattern_len)
-            && (pattern_len..sequence.len()).all(|i| sequence[i] == sequence[i - pattern_len])
+    possible_lengths.iter().any(|pattern_len| {
+        (*pattern_len..sequence.len()).all(|i| sequence[i] == sequence[i - pattern_len])
     })
+}
+
+fn possible_repeat_lengths(start: u64, end: u64) -> Vec<usize> {
+    let start_length = start.ilog10() + 1;
+    let end_length = end.ilog10() + 1;
+    let mut possible_lengths = Vec::new();
+    for length in (1..=(end_length / 2)).rev() {
+        if (start_length..=end_length).any(|base_length| base_length.is_multiple_of(length)) {
+            possible_lengths.push(length as usize);
+        }
+    }
+    possible_lengths
 }
 
 pub fn task2(input: &str) -> String {
@@ -81,9 +92,11 @@ pub fn task2(input: &str) -> String {
     get_ranges(input)
         .par_bridge()
         .map(|(start, end)| {
+            // TODO: split magnitudes?
+            let possible_lengths = possible_repeat_lengths(start, end);
             (start..=end)
                 .into_par_iter()
-                .filter(|num| contains_repeats(*num))
+                .filter(|num| contains_repeats(*num, &possible_lengths))
                 .sum::<u64>()
         })
         .sum::<u64>()
