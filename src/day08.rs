@@ -1,10 +1,9 @@
+use lazysort::SortedBy;
 use std::{
     cell::RefCell,
     ptr,
     rc::{Rc, Weak},
 };
-
-use lazysort::SortedBy;
 
 #[derive(Debug)]
 struct Point3D {
@@ -15,20 +14,26 @@ struct Point3D {
 
 impl Point3D {
     fn euclidean_distance(&self, other: &Self) -> f64 {
-        (((self.x - other.x) * (self.x - other.x)
-            + (self.y - other.y) * (self.y - other.y)
-            + (self.z - other.z) * (self.z - other.z)) as f64)
-            .sqrt()
+        let diff_x = self.x - other.x;
+        let diff_y = self.y - other.y;
+        let diff_z = self.z - other.z;
+        ((diff_x * diff_x + diff_y * diff_y + diff_z * diff_z) as f64).sqrt()
     }
 }
 
 #[derive(Debug)]
 struct Node {
     pos: Point3D,
-    component: Weak<RefCell<Node>>,
-    component_size: u32,
+    /// (transitively) points to the representative of current component
+    component: WeakNodeRef,
+    /// number of elements with current node as ancestor
+    children_count: u32,
+    /// upper bound for depth of tree
     rank: u8,
 }
+
+type NodeRef = Rc<RefCell<Node>>;
+type WeakNodeRef = Weak<RefCell<Node>>;
 
 impl Node {
     fn is_root(&self) -> bool {
@@ -36,31 +41,31 @@ impl Node {
     }
 }
 
-fn connect(lhs: Rc<RefCell<Node>>, rhs: Rc<RefCell<Node>>) {
-    if is_connected(lhs.clone(), rhs.clone()) {
+fn connect(lhs: &NodeRef, rhs: &NodeRef) {
+    if is_connected(lhs, rhs) {
         return;
     }
-    let lhs = find_component(lhs.clone());
-    let rhs = find_component(rhs.clone());
+    let lhs = find_component(lhs);
+    let rhs = find_component(rhs);
     if lhs.borrow().rank >= rhs.borrow().rank {
         rhs.borrow_mut().component = lhs.borrow().component.clone();
-        lhs.borrow_mut().component_size += rhs.borrow().component_size;
+        lhs.borrow_mut().children_count += rhs.borrow().children_count;
         if lhs.borrow().rank == rhs.borrow().rank {
             lhs.borrow_mut().rank += 1;
         }
     } else {
         lhs.borrow_mut().component = rhs.borrow().component.clone();
-        rhs.borrow_mut().component_size += lhs.borrow().component_size;
+        rhs.borrow_mut().children_count += lhs.borrow().children_count;
     }
 }
 
-fn is_connected(lhs: Rc<RefCell<Node>>, rhs: Rc<RefCell<Node>>) -> bool {
+fn is_connected(lhs: &NodeRef, rhs: &NodeRef) -> bool {
     ptr::eq(find_component(lhs).as_ptr(), find_component(rhs).as_ptr())
 }
 
-fn find_component(node: Rc<RefCell<Node>>) -> Rc<RefCell<Node>> {
+fn find_component(node: &NodeRef) -> NodeRef {
     if !node.borrow().is_root() {
-        let component = find_component(node.borrow_mut().component.upgrade().unwrap()).clone();
+        let component = find_component(&node.borrow_mut().component.upgrade().unwrap()).clone();
         node.borrow_mut().component = Rc::downgrade(&component);
     }
     node.borrow_mut().component.upgrade().unwrap().clone()
@@ -68,12 +73,12 @@ fn find_component(node: Rc<RefCell<Node>>) -> Rc<RefCell<Node>> {
 
 #[derive(Debug, Clone)]
 struct Edge<T> {
-    from: Rc<RefCell<Node>>,
-    to: Rc<RefCell<Node>>,
+    from: NodeRef,
+    to: NodeRef,
     weight: T,
 }
 
-fn parse_points(input: &str) -> Vec<Rc<RefCell<Node>>> {
+fn parse_points(input: &str) -> Box<[NodeRef]> {
     input
         .lines()
         .map(|line| {
@@ -89,7 +94,7 @@ fn parse_points(input: &str) -> Vec<Rc<RefCell<Node>>> {
                         z: elems[2],
                     },
                     component: me.clone(),
-                    component_size: 1,
+                    children_count: 1,
                     rank: 0,
                 })
             })
@@ -97,10 +102,10 @@ fn parse_points(input: &str) -> Vec<Rc<RefCell<Node>>> {
         .collect()
 }
 
-fn min_spanning_tree(nodes: &[Rc<RefCell<Node>>], max_connections: usize) -> Option<Edge<f64>> {
+fn kruskal(nodes: &[NodeRef], max_connections: usize) -> Option<Edge<f64>> {
     let mut edges = Vec::new();
     for (i, from) in nodes.iter().enumerate() {
-        for to in nodes[(i + 1)..].iter() {
+        for to in &nodes[(i + 1)..] {
             edges.push(Edge {
                 from: from.clone(),
                 to: to.clone(),
@@ -113,13 +118,13 @@ fn min_spanning_tree(nodes: &[Rc<RefCell<Node>>], max_connections: usize) -> Opt
         .iter()
         .sorted_by(|a, b| a.weight.partial_cmp(&b.weight).unwrap())
     {
-        connect(edge.from.clone(), edge.to.clone());
-        if find_component(edge.from.clone()).borrow().component_size as usize == nodes.len() {
+        connect(&edge.from, &edge.to);
+        if find_component(&edge.from).borrow().children_count as usize == nodes.len() {
             return Some(edge.clone());
         }
         connections += 1; // we also count nodes already connected
         if connections == max_connections {
-            return None;
+            return Some(edge.clone());
         }
     }
     None
@@ -127,22 +132,18 @@ fn min_spanning_tree(nodes: &[Rc<RefCell<Node>>], max_connections: usize) -> Opt
 
 pub fn task1_connection_count(input: &str, max_connections: usize) -> String {
     let nodes = parse_points(input);
-    min_spanning_tree(&nodes, max_connections);
-    let components: Vec<Rc<RefCell<Node>>> = nodes
+    kruskal(&nodes, max_connections);
+    nodes
         .iter()
         .filter(|node| node.borrow().is_root())
-        .map(Rc::clone)
-        .collect();
-    components
-        .iter()
         .sorted_by(|a, b| {
             a.borrow()
-                .component_size
-                .cmp(&b.borrow().component_size)
+                .children_count
+                .cmp(&b.borrow().children_count)
                 .reverse()
         })
         .take(3)
-        .map(|node| node.borrow().component_size as u64)
+        .map(|node| u64::from(node.borrow().children_count))
         .product::<u64>()
         .to_string()
 }
@@ -153,6 +154,6 @@ pub fn task1(input: &str) -> String {
 
 pub fn task2(input: &str) -> String {
     let nodes = parse_points(input);
-    let last_edge = min_spanning_tree(&nodes, usize::MAX).unwrap();
+    let last_edge = kruskal(&nodes, usize::MAX).unwrap();
     (last_edge.from.borrow().pos.x * last_edge.to.borrow().pos.x).to_string()
 }
