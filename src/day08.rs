@@ -4,6 +4,8 @@ use std::{
     rc::{Rc, Weak},
 };
 
+use lazysort::SortedBy;
+
 #[derive(Debug)]
 struct Point3D {
     x: i64,
@@ -64,7 +66,7 @@ fn find_component(node: Rc<RefCell<Node>>) -> Rc<RefCell<Node>> {
     node.borrow_mut().component.upgrade().unwrap().clone()
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Edge<T> {
     from: Rc<RefCell<Node>>,
     to: Rc<RefCell<Node>>,
@@ -106,13 +108,14 @@ fn min_spanning_tree(nodes: &[Rc<RefCell<Node>>], max_connections: usize) -> Opt
             });
         }
     }
-    // TODO: lazysort
-    edges.sort_unstable_by(|a, b| a.weight.partial_cmp(&b.weight).unwrap());
     let mut connections = 0;
-    for edge in edges {
+    for edge in edges
+        .iter()
+        .sorted_by(|a, b| a.weight.partial_cmp(&b.weight).unwrap())
+    {
         connect(edge.from.clone(), edge.to.clone());
         if find_component(edge.from.clone()).borrow().component_size as usize == nodes.len() {
-            return Some(edge);
+            return Some(edge.clone());
         }
         connections += 1; // we also count nodes already connected
         if connections == max_connections {
@@ -125,15 +128,19 @@ fn min_spanning_tree(nodes: &[Rc<RefCell<Node>>], max_connections: usize) -> Opt
 pub fn task1_connection_count(input: &str, max_connections: usize) -> String {
     let nodes = parse_points(input);
     min_spanning_tree(&nodes, max_connections);
-    let mut components: Vec<Rc<RefCell<Node>>> = nodes
+    let components: Vec<Rc<RefCell<Node>>> = nodes
         .iter()
         .filter(|node| node.borrow().is_root())
         .map(Rc::clone)
         .collect();
-    components.sort_unstable_by_key(|node| node.borrow().component_size);
     components
         .iter()
-        .rev()
+        .sorted_by(|a, b| {
+            a.borrow()
+                .component_size
+                .cmp(&b.borrow().component_size)
+                .reverse()
+        })
         .take(3)
         .map(|node| node.borrow().component_size as u64)
         .product::<u64>()
