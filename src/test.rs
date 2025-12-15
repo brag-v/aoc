@@ -305,15 +305,53 @@ fn test_day9_task1() {
     )
 }
 
-
 #[test]
 fn test_day10_task1() {
     assert_task!(
         day10::task1,
-"[.##.] (3) (1,3) (2) (2,3) (0,2) (0,1) {3,5,4,7}
+        "[.##.] (3) (1,3) (2) (2,3) (0,2) (0,1) {3,5,4,7}
 [...#.] (0,2,3,4) (2,3) (0,4) (0,1,2) (1,2,3,4) {7,5,12,7,2}
 [.###.#] (0,1,2,3,4) (0,3,4) (0,1,2,4,5) (1,2) {10,11,11,5,10,5}",
         "7"
     )
 }
 
+#[test]
+fn test_day11_task1() {
+    assert_task!(
+        day11::task1,
+        "aaa: you hhh
+you: bbb ccc
+bbb: ddd eee
+ccc: ddd eee fff
+ddd: ggg
+eee: out
+fff: out
+ggg: out
+hhh: ccc fff iii
+iii: out",
+        "5"
+    )
+}
+
+
+#[test]
+fn test_day11_task2() {
+    assert_task!(
+        day11::task2,
+"svr: aaa bbb
+aaa: fft
+fft: ccc
+bbb: tty
+tty: ccc
+ccc: ddd eee
+ddd: hub
+hub: fff
+eee: dac
+dac: fff
+fff: ggg hhh
+ggg: out
+hhh: out",
+        "2"
+    )
+}
