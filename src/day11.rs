@@ -1,8 +1,4 @@
-use std::{
-    collections::HashMap,
-    ops::{Add, AddAssign},
-    rc::Rc,
-};
+use std::{collections::HashMap, ops::AddAssign, rc::Rc};
 
 enum SearchStatus {
     Unexplored,
@@ -13,17 +9,17 @@ enum SearchStatus {
 #[derive(Clone)]
 struct PathCounts {
     simple_paths: usize,
-    fft_paths: usize,
-    dac_paths: usize,
-    both_paths: usize,
+    paths_with_fft: usize,
+    paths_with_dac: usize,
+    paths_with_both: usize,
 }
 
 impl AddAssign<&PathCounts> for PathCounts {
     fn add_assign(&mut self, rhs: &PathCounts) {
         self.simple_paths += rhs.simple_paths;
-        self.fft_paths += rhs.fft_paths;
-        self.dac_paths += rhs.dac_paths;
-        self.both_paths += rhs.both_paths;
+        self.paths_with_fft += rhs.paths_with_fft;
+        self.paths_with_dac += rhs.paths_with_dac;
+        self.paths_with_both += rhs.paths_with_both;
     }
 }
 
@@ -57,70 +53,85 @@ fn parse_devices(input: &str) -> (Vec<Device>, HashMap<String, usize>) {
         connections: Rc::new([]),
         search_status: SearchStatus::Explored(PathCounts {
             simple_paths: 1,
-            fft_paths: 0,
-            dac_paths: 0,
-            both_paths: 0,
+            paths_with_fft: 0,
+            paths_with_dac: 0,
+            paths_with_both: 0,
         }),
     });
 
     (devices, indecies)
 }
 
-fn count_simple_paths(devices: &[Device], from: usize, to: usize) -> usize {
-    if from == to {
-        1
-    } else {
-        devices[from]
-            .connections
-            .iter()
-            .map(|connection| count_simple_paths(devices, *connection, to))
-            .sum()
+fn count_simple_paths(devices: &mut [Device], from: usize) -> usize {
+    match &devices[from].search_status {
+        SearchStatus::Unexplored => {
+            devices[from].search_status = SearchStatus::Exploring;
+            let path_count: usize = devices[from]
+                .connections
+                .clone()
+                .iter()
+                .map(|connection| count_simple_paths(devices, *connection))
+                .sum();
+            devices[from].search_status = SearchStatus::Explored(PathCounts {
+                simple_paths: path_count,
+                paths_with_fft: 0,
+                paths_with_dac: 0,
+                paths_with_both: 0,
+            });
+            path_count
+        }
+        SearchStatus::Exploring => panic!("loop detecte in path"),
+        SearchStatus::Explored(path_counts) => path_counts.simple_paths,
     }
 }
 
 pub fn task1(input: &str) -> String {
-    let (devices, indecies) = parse_devices(input);
-    count_simple_paths(&devices, indecies["you"], indecies["out"]).to_string()
+    let (mut devices, indecies) = parse_devices(input);
+    count_simple_paths(&mut devices, indecies["you"]).to_string()
 }
 
-fn count_transformed_paths(devices: &mut [Device], from: usize, dac: usize, fft: usize) -> PathCounts {
+fn count_transformed_paths(
+    devices: &mut [Device],
+    from: usize,
+    dac: usize,
+    fft: usize,
+) -> PathCounts {
     match &devices[from].search_status {
         SearchStatus::Unexplored => {
             devices[from].search_status = SearchStatus::Exploring;
             let mut path_counts = PathCounts {
                 simple_paths: 0,
-                fft_paths: 0,
-                dac_paths: 0,
-                both_paths: 0,
+                paths_with_fft: 0,
+                paths_with_dac: 0,
+                paths_with_both: 0,
             };
             for connection in devices[from].connections.clone().iter() {
                 path_counts += &count_transformed_paths(devices, *connection, dac, fft);
             }
             if from == dac {
-                path_counts.both_paths = path_counts.fft_paths;
-                path_counts.dac_paths = path_counts.simple_paths;
+                path_counts.paths_with_both = path_counts.paths_with_fft;
+                path_counts.paths_with_dac = path_counts.simple_paths;
             }
             if from == fft {
-                path_counts.both_paths = path_counts.dac_paths;
-                path_counts.fft_paths = path_counts.simple_paths;
+                path_counts.paths_with_both = path_counts.paths_with_dac;
+                path_counts.paths_with_fft = path_counts.simple_paths;
             }
             devices[from].search_status = SearchStatus::Explored(path_counts.clone());
             path_counts
         }
-        SearchStatus::Exploring => panic!("loop"),
+        SearchStatus::Exploring => panic!("loop detecte in path"),
         SearchStatus::Explored(path_counts) => path_counts.clone(),
     }
 }
 
 pub fn task2(input: &str) -> String {
     let (mut devices, indecies) = parse_devices(input);
-    devices[indecies["out"]].search_status = SearchStatus::Explored(PathCounts {
-        simple_paths: 1,
-        fft_paths: 0,
-        dac_paths: 0,
-        both_paths: 0,
-    });
-    count_transformed_paths(&mut devices, indecies["svr"], indecies["dac"], indecies["fft"])
-        .both_paths
-        .to_string()
+    count_transformed_paths(
+        &mut devices,
+        indecies["svr"],
+        indecies["dac"],
+        indecies["fft"],
+    )
+    .paths_with_both
+    .to_string()
 }
