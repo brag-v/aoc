@@ -9,16 +9,14 @@ enum SearchStatus {
 #[derive(Clone)]
 struct PathCounts {
     simple_paths: usize,
-    paths_with_fft: usize,
-    paths_with_dac: usize,
+    paths_with_either: usize,
     paths_with_both: usize,
 }
 
 impl AddAssign<&PathCounts> for PathCounts {
     fn add_assign(&mut self, rhs: &PathCounts) {
         self.simple_paths += rhs.simple_paths;
-        self.paths_with_fft += rhs.paths_with_fft;
-        self.paths_with_dac += rhs.paths_with_dac;
+        self.paths_with_either += rhs.paths_with_either;
         self.paths_with_both += rhs.paths_with_both;
     }
 }
@@ -28,14 +26,15 @@ struct Device {
     search_status: SearchStatus,
 }
 
-fn parse_devices(input: &str) -> (Vec<Device>, HashMap<String, usize>) {
-    let mut indecies: HashMap<String, usize> = input
+fn parse_devices(input: &str) -> (Vec<Device>, HashMap<&str, usize>) {
+    let mut indecies: HashMap<&str, usize> = input
         .lines()
         .enumerate()
-        .map(|(i, line)| (line[..3].to_owned(), i))
+        .map(|(i, line)| (&line[..3], i))
         .collect();
 
-    indecies.insert("out".to_owned(), indecies.len());
+    // add out device to index
+    indecies.insert("out", indecies.len());
 
     let mut devices: Vec<Device> = input
         .lines()
@@ -49,12 +48,14 @@ fn parse_devices(input: &str) -> (Vec<Device>, HashMap<String, usize>) {
         })
         .collect();
 
+    // add out device device-list
+    // we already know that there's a single (zero length) path from the goal to the goal node,
+    // and that it doesn't contain the fft or dac nodes
     devices.push(Device {
         connections: Rc::new([]),
         search_status: SearchStatus::Explored(PathCounts {
             simple_paths: 1,
-            paths_with_fft: 0,
-            paths_with_dac: 0,
+            paths_with_either: 0,
             paths_with_both: 0,
         }),
     });
@@ -74,8 +75,7 @@ fn count_simple_paths(devices: &mut [Device], from: usize) -> usize {
                 .sum();
             devices[from].search_status = SearchStatus::Explored(PathCounts {
                 simple_paths: path_count,
-                paths_with_fft: 0,
-                paths_with_dac: 0,
+                paths_with_either: 0,
                 paths_with_both: 0,
             });
             path_count
@@ -101,25 +101,29 @@ fn count_transformed_paths(
             devices[from].search_status = SearchStatus::Exploring;
             let mut path_counts = PathCounts {
                 simple_paths: 0,
-                paths_with_fft: 0,
-                paths_with_dac: 0,
+                paths_with_either: 0,
                 paths_with_both: 0,
             };
-            for connection in devices[from].connections.clone().iter() {
-                path_counts += &count_transformed_paths(devices, *connection, dac, fft);
+            // the number of paths from the current node to the goal node is the sum of paths from
+            // each of it's connections
+            for &connection in devices[from].connections.clone().iter() {
+                path_counts += &count_transformed_paths(devices, connection, dac, fft);
             }
-            if from == dac {
-                path_counts.paths_with_both = path_counts.paths_with_fft;
-                path_counts.paths_with_dac = path_counts.simple_paths;
+            // count paths without fft/dac as paths with fft/dac
+            // note that paths_with_both <= paths_with_either <= simple_paths
+            if from == dac || from == fft {
+                path_counts.paths_with_both = path_counts.paths_with_either;
+                path_counts.paths_with_either = path_counts.simple_paths;
             }
-            if from == fft {
-                path_counts.paths_with_both = path_counts.paths_with_dac;
-                path_counts.paths_with_fft = path_counts.simple_paths;
-            }
+            // store and return path count
             devices[from].search_status = SearchStatus::Explored(path_counts.clone());
             path_counts
         }
+        // a loop on a path between the start and goal node would entail an infinite number of paths
+        // we could exclude loops instead of panicing by returning 0 here
+        // we don't check if the goal node is reachable
         SearchStatus::Exploring => panic!("loop detecte in path"),
+        // we already checked the number of paths to this node, or this is the goal node
         SearchStatus::Explored(path_counts) => path_counts.clone(),
     }
 }
