@@ -2,7 +2,7 @@ pub fn task1(input: &str) -> String {
     let mut dial: i32 = 50;
     let mut zero_count = 0;
     for line in input.lines() {
-        let direction = line.bytes().next().unwrap();
+        let direction = line.as_bytes()[0];
         let distance: i32 = line[1..].parse().unwrap();
         match direction {
             b'L' => dial = (dial - distance).rem_euclid(100),

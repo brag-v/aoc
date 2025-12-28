@@ -1,6 +1,10 @@
 use microlp::{ComparisonOp, OptimizationDirection, Problem, Variable};
 use regex::Regex;
-use std::collections::HashSet;
+use std::{collections::HashSet, sync::LazyLock};
+
+static LIGHTS_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^\[([\.\#]+)\]").unwrap());
+static BUTTONS_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"\(((?:\d+,?)*)\)").unwrap());
+static JOLTAGE_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"\{((\d+,?)*)\}$").unwrap());
 
 #[derive(Debug)]
 struct Machine {
@@ -9,42 +13,34 @@ struct Machine {
     joltage: Vec<u16>,
 }
 
-fn parse_machines(input: &str) -> Vec<Machine> {
-    let machine_re = Regex::new(r"^\[(?<lights>[\.\#]+)\][^{]*\{(?<joltage>(\d+,?)*)\}$").unwrap();
-    let buttons_re = Regex::new(r"\(((?:\d+,?)*)\)").unwrap();
-    input
-        .lines()
-        .map(|line| {
-            let caps = machine_re.captures(line).unwrap();
-            let indicator_lights = caps["lights"]
-                .bytes()
-                .rev()
-                .map(|light| match light {
-                    b'#' => 1,
-                    b'.' => 0,
-                    _ => panic!(),
-                })
-                .fold(0, |acc, digit| acc * 2 + digit);
-            let joltage: Vec<u16> = caps["joltage"]
-                .split(',')
-                .map(|num| num.parse().unwrap())
-                .collect();
-            let mut buttons = Vec::new();
-            for caps in buttons_re.captures_iter(line) {
-                buttons.push(
-                    caps[1]
-                        .split(',')
-                        .map(|num| 1 << num.parse::<u8>().unwrap())
-                        .sum(),
-                );
-            }
-            Machine {
-                indicator_lights,
-                buttons,
-                joltage,
-            }
+fn parse_machine(line: &str) -> Machine {
+    let indicator_lights = LIGHTS_RE.captures(line).unwrap()[1]
+        .bytes()
+        .enumerate()
+        .map(|(i, light)| match light {
+            b'#' => 1 << i,
+            b'.' => 0,
+            _ => panic!(),
         })
-        .collect()
+        .sum();
+    let joltage: Vec<u16> = JOLTAGE_RE.captures(line).unwrap()[1]
+        .split(',')
+        .map(|num| num.parse().unwrap())
+        .collect();
+    let buttons = BUTTONS_RE
+        .captures_iter(line)
+        .map(|caps| {
+            caps[1]
+                .split(',')
+                .map(|num| 1 << num.parse::<u8>().unwrap())
+                .sum()
+        })
+        .collect();
+    Machine {
+        indicator_lights,
+        buttons,
+        joltage,
+    }
 }
 
 fn activation_button_presses(machine: &Machine) -> usize {
@@ -72,82 +68,45 @@ fn activation_button_presses(machine: &Machine) -> usize {
 }
 
 pub fn task1(input: &str) -> String {
-    parse_machines(input)
-        .iter()
-        .map(activation_button_presses)
+    input
+        .lines()
+        .map(parse_machine)
+        .map(|machine| activation_button_presses(&machine))
         .sum::<usize>()
         .to_string()
 }
 
-fn press(mut button: usize, joltage: &[u16]) -> Vec<u16> {
-    let mut result = joltage.to_vec();
-    for value in &mut result {
-        if button % 2 == 1 {
-            *value += 1;
-        }
-        button >>= 1;
-    }
-    result
-}
-
-// fn configureation_button_presses(machine: &Machine) -> usize {
-//     let mut visited: HashSet<Vec<u16>> = HashSet::new();
-//     let mut current = &mut vec![vec![0; machine.joltage.len()]];
-//     let mut next = &mut vec![];
-//     for presses in 1..100 {
-//         for joltage in &mut *current {
-//             for button in &machine.buttons {
-//                 let new_joltage = press(*button, joltage);
-//                 if visited.contains(&new_joltage) {
-//                     continue;
-//                 }
-//                 if new_joltage.iter().zip(machine.joltage.iter()).any(|(current, target)| current > target) {
-//                     continue;
-//                 }
-//                 if new_joltage == machine.joltage {
-//                     return presses;
-//                 }
-//                 visited.insert(new_joltage.clone());
-//                 next.push(new_joltage);
-//             }
-//         }
-//         (next, current) = (current, next);
-//         next.truncate(0);
-//     }
-//     0
-// }
-
 fn configureation_button_presses(machine: &Machine) -> usize {
     let mut problem = Problem::new(OptimizationDirection::Minimize);
     let max = *machine.joltage.iter().max().unwrap() as i32;
-    let vars: Box<[Variable]> = machine
+    let presses: Box<[Variable]> = machine
         .buttons
         .iter()
         .map(|_| problem.add_integer_var(1.0, (0, max)))
         .collect();
-    for (i, spec) in machine.joltage.iter().enumerate() {
-        let spec_vars = machine
-            .buttons
-            .iter()
-            .zip(vars.iter())
-            .filter_map(|(button, var)| {
-                if button & 1 << i != 0 {
-                    Some((*var, 1.0))
-                } else {
-                    None
-                }
-            });
-        problem.add_constraint(spec_vars, ComparisonOp::Eq, (*spec).into());
+    for (i, joltage) in machine.joltage.iter().enumerate() {
+        let joltage_presses =
+            machine
+                .buttons
+                .iter()
+                .zip(presses.iter())
+                .filter_map(|(button, var)| {
+                    if button & (1 << i) != 0 {
+                        Some((*var, 1.0))
+                    } else {
+                        None
+                    }
+                });
+        problem.add_constraint(joltage_presses, ComparisonOp::Eq, (*joltage).into());
     }
-    let solution = problem.solve().unwrap();
-    solution.objective() as usize
+    problem.solve().unwrap().objective().round() as usize
 }
 
 pub fn task2(input: &str) -> String {
-    parse_machines(input)
-        .iter()
-        .map(configureation_button_presses)
-        .inspect(|presses| println!("{presses}"))
+    input
+        .lines()
+        .map(parse_machine)
+        .map(|machine| configureation_button_presses(&machine))
         .sum::<usize>()
         .to_string()
 }

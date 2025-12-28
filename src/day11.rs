@@ -48,9 +48,9 @@ fn parse_devices(input: &str) -> (Vec<Device>, HashMap<&str, usize>) {
         })
         .collect();
 
-    // add out device device-list
+    // add out device to device list
     // we already know that there's a single (zero length) path from the goal to the goal node,
-    // and that it doesn't contain the fft or dac nodes
+    // and that it doesn't contain either of the fft or dac nodes
     devices.push(Device {
         connections: Rc::new([]),
         search_status: SearchStatus::Explored(PathCounts {
