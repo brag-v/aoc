@@ -6,3 +6,35 @@ macro_rules! assert_task {
         assert_eq!(solution, $expected.to_string());
     }};
 }
+
+
+#[test]
+fn test_day1_task1() {
+    assert_task!(
+        day01::task1,
+"1721
+979
+366
+299
+675
+1456",
+        "514579"
+    )
+}
+
+
+#[test]
+fn test_day1_task2() {
+    assert_task!(
+        day01::task2,
+"1721
+979
+366
+299
+675
+1456",
+        "241861950"
+    )
+}
+
+
