@@ -152,3 +152,14 @@ iyr:2010 hgt:158cm hcl:#b6652a ecl:blu byr:1944 eyr:2021 pid:09315471",
     )
 }
 
+#[test]
+fn test_day5_task1() {
+    assert_task!(
+        day05::task1,
+        "BFFFBBFRRR
+FFFBBBFRRR
+BBFFBBFRLL",
+        "820"
+    )
+}
+
