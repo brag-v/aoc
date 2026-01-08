@@ -163,3 +163,48 @@ BBFFBBFRLL",
     )
 }
 
+#[test]
+fn test_day6_task1() {
+    assert_task!(
+        day06::task1,
+"abc
+
+a
+b
+c
+
+ab
+ac
+
+a
+a
+a
+a
+
+b",
+        "11"
+    )
+}
+
+#[test]
+fn test_day6_task2() {
+    assert_task!(
+        day06::task2,
+"abc
+
+a
+b
+c
+
+ab
+ac
+
+a
+a
+a
+a
+
+b",
+        "6"
+    )
+}
