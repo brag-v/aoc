@@ -13,7 +13,7 @@ pub fn task1(input: &str) -> String {
 }
 
 pub fn task2(input: &str) -> String {
-    let mut taken_seats = vec![false; 128 * 8];
+    let mut taken_seats = [false; 128 * 8];
     input
         .lines()
         .map(seat_id)
