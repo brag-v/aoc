@@ -223,11 +223,12 @@ dotted black bags contain no other bags.",
         "4"
     )
 }
+
 #[test]
 fn test_day7_task2() {
     assert_task!(
         day07::task2,
-"shiny gold bags contain 2 dark red bags.
+        "shiny gold bags contain 2 dark red bags.
 dark red bags contain 2 dark orange bags.
 dark orange bags contain 2 dark yellow bags.
 dark yellow bags contain 2 dark green bags.
@@ -235,5 +236,40 @@ dark green bags contain 2 dark blue bags.
 dark blue bags contain 2 dark violet bags.
 dark violet bags contain no other bags.",
         "126"
+    )
+}
+
+#[test]
+fn test_day8_task1() {
+    assert_task!(
+        day08::task1,
+        "nop +0
+acc +1
+jmp +4
+acc +3
+jmp -3
+acc -99
+acc +1
+jmp -4
+acc +6",
+        "5"
+    )
+}
+
+
+#[test]
+fn test_day8_task2() {
+    assert_task!(
+        day08::task2,
+        "nop +0
+acc +1
+jmp +4
+acc +3
+jmp -3
+acc -99
+acc +1
+jmp -4
+acc +6",
+        "8"
     )
 }
