@@ -2,7 +2,10 @@ use std::{
     cell::RefCell,
     collections::{HashMap, HashSet},
     rc::{Rc, Weak},
+    sync::LazyLock,
 };
+
+use regex::Regex;
 
 #[derive(Debug)]
 struct Bag {
@@ -11,14 +14,12 @@ struct Bag {
     contains: Vec<(u32, Weak<RefCell<Bag>>)>,
 }
 
+static USELESS_WORDS: LazyLock<Regex> = LazyLock::new(|| Regex::new(r" bags?|\.").unwrap());
+
 fn parse_bags(input: &str) -> HashMap<String, Rc<RefCell<Bag>>> {
     let mut bags = HashMap::new();
-    let input = input
-        .replace(" bags", "")
-        .replace(" bag", "")
-        .replace(".", "");
-    // multiple allocations + order matters
-    // also must use String instead of &str in hashmap
+    let input = USELESS_WORDS.replace_all(input, "");
+    // must use String instead of &str in hashmap
     input
         .lines()
         .map(|line| line.split_once(" contain").unwrap().0)
