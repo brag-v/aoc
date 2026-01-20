@@ -77,15 +77,25 @@ pub fn task1(input: &str) -> String {
     container_count(bags.get("shiny gold").unwrap()).to_string()
 }
 
-fn content_count(bag: &Rc<RefCell<Bag>>) -> usize {
-    bag.borrow()
-        .contains
-        .iter()
-        .map(|(count, inner)| *count as usize * (1 + content_count(&Weak::upgrade(inner).unwrap())))
-        .sum()
+fn content_count(bag: &Rc<RefCell<Bag>>, memo: &mut HashMap<usize, usize>) -> usize {
+    match memo.get(&bag.borrow().id) {
+        Some(count) => *count,
+        None => {
+            let count = bag
+                .borrow()
+                .contains
+                .iter()
+                .map(|(count, inner)| {
+                    *count as usize * (1 + content_count(&Weak::upgrade(inner).unwrap(), memo))
+                })
+                .sum();
+            memo.insert(bag.borrow().id, count);
+            count
+        }
+    }
 }
 
 pub fn task2(input: &str) -> String {
     let bags = parse_bags(input);
-    content_count(bags.get("shiny gold").unwrap()).to_string()
+    content_count(bags.get("shiny gold").unwrap(), &mut HashMap::new()).to_string()
 }
