@@ -76,7 +76,6 @@ fn test_day3_task1() {
     )
 }
 
-
 #[test]
 fn test_day3_task2() {
     assert_task!(
@@ -96,12 +95,11 @@ fn test_day3_task2() {
     )
 }
 
-
 #[test]
 fn test_day4_task1() {
     assert_task!(
         day04::task1,
-"ecl:gry pid:860033327 eyr:2020 hcl:#fffffd
+        "ecl:gry pid:860033327 eyr:2020 hcl:#fffffd
 byr:1937 iyr:2017 cid:147 hgt:183cm
 
 iyr:2013 ecl:amb cid:350 eyr:2023 pid:028048884
@@ -167,7 +165,7 @@ BBFFBBFRLL",
 fn test_day6_task1() {
     assert_task!(
         day06::task1,
-"abc
+        "abc
 
 a
 b
@@ -190,7 +188,7 @@ b",
 fn test_day6_task2() {
     assert_task!(
         day06::task2,
-"abc
+        "abc
 
 a
 b
@@ -206,5 +204,36 @@ a
 
 b",
         "6"
+    )
+}
+
+#[test]
+fn test_day7_task1() {
+    assert_task!(
+        day07::task1,
+        "light red bags contain 1 bright white bag, 2 muted yellow bags.
+dark orange bags contain 3 bright white bags, 4 muted yellow bags.
+bright white bags contain 1 shiny gold bag.
+muted yellow bags contain 2 shiny gold bags, 9 faded blue bags.
+shiny gold bags contain 1 dark olive bag, 2 vibrant plum bags.
+dark olive bags contain 3 faded blue bags, 4 dotted black bags.
+vibrant plum bags contain 5 faded blue bags, 6 dotted black bags.
+faded blue bags contain no other bags.
+dotted black bags contain no other bags.",
+        "4"
+    )
+}
+#[test]
+fn test_day7_task2() {
+    assert_task!(
+        day07::task2,
+"shiny gold bags contain 2 dark red bags.
+dark red bags contain 2 dark orange bags.
+dark orange bags contain 2 dark yellow bags.
+dark yellow bags contain 2 dark green bags.
+dark green bags contain 2 dark blue bags.
+dark blue bags contain 2 dark violet bags.
+dark violet bags contain no other bags.",
+        "126"
     )
 }
