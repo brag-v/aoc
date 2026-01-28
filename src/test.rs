@@ -256,7 +256,6 @@ acc +6",
     )
 }
 
-
 #[test]
 fn test_day8_task2() {
     assert_task!(
@@ -271,5 +270,66 @@ acc +1
 jmp -4
 acc +6",
         "8"
+    )
+}
+
+#[test]
+fn test_day9_task1() {
+    assert_eq!(
+        day09::task1_custom_preamble(
+            "35
+20
+15
+25
+47
+40
+62
+55
+65
+95
+102
+117
+150
+182
+127
+219
+299
+277
+309
+576",
+            5
+        ),
+        "127"
+    )
+}
+
+
+#[test]
+fn test_day9_task2() {
+    assert_eq!(
+        day09::task2_custom_preamble(
+            "35
+20
+15
+25
+47
+40
+62
+55
+65
+95
+102
+117
+150
+182
+127
+219
+299
+277
+309
+576",
+            5
+        ),
+        "62"
     )
 }
