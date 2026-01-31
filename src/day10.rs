@@ -32,7 +32,8 @@ pub fn task2(input: &str) -> String {
     // buttom up calculation:
     for i in (0..(n - 1)).rev() {
         // possible arrangment from adapter i is the sum of all 
-        // possible arrangments reachable from i (within 3 joltage levels)
+        // possible arrangments from adapters reachable from adapter i 
+        // (within 3 joltage levels)
         for j in (i + 1)..n {
             if adapters[j] > adapters[i] + 3 {
                 break;
