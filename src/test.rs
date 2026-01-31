@@ -437,3 +437,20 @@ fn test_day10_task2() {
         "19208"
     )
 }
+
+#[test]
+fn test_day11_task1() {
+        assert_task!(day11::task1,
+"L.LL.LL.LL
+LLLLLLL.LL
+L.L.L..L..
+LLLL.LL.LL
+L.LL.LL.LL
+L.LLLLL.LL
+..L.L.....
+LLLLLLLLLL
+L.LLLLLL.L
+L.LLLLL.LL",
+        "37"
+    )
+}
