@@ -303,7 +303,6 @@ fn test_day9_task1() {
     )
 }
 
-
 #[test]
 fn test_day9_task2() {
     assert_eq!(
@@ -334,11 +333,11 @@ fn test_day9_task2() {
     )
 }
 
-
 #[test]
 fn test_day10_task1() {
-        assert_task!(day10::task1,
-"16
+    assert_task!(
+        day10::task1,
+        "16
 10
 15
 5
@@ -351,8 +350,9 @@ fn test_day10_task1() {
 4",
         "35"
     );
-        assert_task!(day10::task1,
-"28
+    assert_task!(
+        day10::task1,
+        "28
 33
 18
 42
@@ -388,8 +388,9 @@ fn test_day10_task1() {
 }
 #[test]
 fn test_day10_task2() {
-        assert_task!(day10::task2,
-"16
+    assert_task!(
+        day10::task2,
+        "16
 10
 15
 5
@@ -402,8 +403,9 @@ fn test_day10_task2() {
 4",
         "8"
     );
-        assert_task!(day10::task2,
-"28
+    assert_task!(
+        day10::task2,
+        "28
 33
 18
 42
@@ -440,8 +442,9 @@ fn test_day10_task2() {
 
 #[test]
 fn test_day11_task1() {
-        assert_task!(day11::task1,
-"L.LL.LL.LL
+    assert_task!(
+        day11::task1,
+        "L.LL.LL.LL
 LLLLLLL.LL
 L.L.L..L..
 LLLL.LL.LL
@@ -452,5 +455,49 @@ LLLLLLLLLL
 L.LLLLLL.L
 L.LLLLL.LL",
         "37"
+    )
+}
+
+#[test]
+fn test_day11_task2() {
+    assert_task!(
+        day11::task2,
+        "L.LL.LL.LL
+LLLLLLL.LL
+L.L.L..L..
+LLLL.LL.LL
+L.LL.LL.LL
+L.LLLLL.LL
+..L.L.....
+LLLLLLLLLL
+L.LLLLLL.L
+L.LLLLL.LL",
+        "26"
+    )
+}
+
+#[test]
+fn test_day12_task1() {
+    assert_task!(
+        day12::task1,
+        "F10
+N3
+F7
+R90
+F11",
+        "25"
+    )
+}
+
+#[test]
+fn test_day12_task2() {
+    assert_task!(
+        day12::task2,
+        "F10
+N3
+F7
+R90
+F11",
+        "286"
     )
 }
