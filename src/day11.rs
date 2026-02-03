@@ -1,4 +1,4 @@
-use crate::grid::{ADJACENT_WITH_DIAGONAL_OFFSETS, Map, Point2D};
+use crate::grid::{Map, Point2D};
 
 // TODO: calculate seat neighbors during construction,
 // which us used to iterate the plane, rather than passing the update rule
@@ -47,8 +47,8 @@ fn iterate_plane(
     for y in 0..prev_plane.height() {
         for x in 0..prev_plane.width() {
             let pos = Point2D {
-                x: x as isize,
-                y: y as isize,
+                x: x as i64,
+                y: y as i64,
             };
             let new_seat = next_seat_rule(pos, prev_plane);
             if new_seat != prev_plane[pos] {
@@ -91,7 +91,7 @@ fn sees_occupied(start: &Point2D, direction: &Point2D, plane: &Map<Tile>) -> boo
             Tile::Empty => return false,
             Tile::Occupied => return true,
         }
-        pos = pos + *direction;
+        pos += *direction;
     }
     false
 }
@@ -100,7 +100,7 @@ fn new_seat_visible_neighbors(pos: Point2D, plane: &Map<Tile>) -> Tile {
     match plane[pos] {
         Tile::Floor => Tile::Floor,
         Tile::Empty => {
-            if ADJACENT_WITH_DIAGONAL_OFFSETS
+            if Point2D::ADJACENT_WITH_DIAGONAL_OFFSETS
                 .iter()
                 .any(|direction| sees_occupied(&pos, direction, plane))
             {
@@ -110,7 +110,7 @@ fn new_seat_visible_neighbors(pos: Point2D, plane: &Map<Tile>) -> Tile {
             }
         }
         Tile::Occupied => {
-            if ADJACENT_WITH_DIAGONAL_OFFSETS
+            if Point2D::ADJACENT_WITH_DIAGONAL_OFFSETS
                 .iter()
                 .filter(|direction| sees_occupied(&pos, direction, plane))
                 .count()

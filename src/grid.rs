@@ -2,23 +2,43 @@
 //! a common format for advent of code tasks
 #![allow(dead_code)]
 
-use std::ops::{Add, Index, IndexMut};
+use std::ops::{Add, AddAssign, Index, IndexMut, Mul, Sub};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd)]
 pub struct Point2D {
-    pub x: isize,
-    pub y: isize,
+    pub x: i64,
+    pub y: i64,
 }
 
 impl Point2D {
+    pub const ZERO: Point2D = Point2D { x: 0, y: 0 };
+
+    pub const ADJACENT_OFFSETS: [Point2D; 4] = [
+        Point2D { x: -1, y: 0 },
+        Point2D { x: 0, y: -1 },
+        Point2D { x: 0, y: 1 },
+        Point2D { x: 1, y: 0 },
+    ];
+
+    pub const ADJACENT_WITH_DIAGONAL_OFFSETS: [Point2D; 8] = [
+        Point2D { x: -1, y: 0 },
+        Point2D { x: 0, y: -1 },
+        Point2D { x: 0, y: 1 },
+        Point2D { x: 1, y: 0 },
+        Point2D { x: -1, y: -1 },
+        Point2D { x: -1, y: 1 },
+        Point2D { x: 1, y: -1 },
+        Point2D { x: 1, y: 1 },
+    ];
+
     pub fn adjecent_with_offsets(
         &self,
         width_bound: usize,
         height_bound: usize,
         offsets: &[Point2D],
     ) -> impl Iterator<Item = Point2D> {
-        let width_bound = width_bound as isize;
-        let height_bound = height_bound as isize;
+        let width_bound = width_bound as i64;
+        let height_bound = height_bound as i64;
         offsets
             .iter()
             .map(|offset| *self + *offset)
@@ -34,16 +54,7 @@ impl Point2D {
         width_bound: usize,
         height_bound: usize,
     ) -> impl Iterator<Item = Point2D> {
-        self.adjecent_with_offsets(
-            width_bound,
-            height_bound,
-            &[
-                Point2D { x: -1, y: 0 },
-                Point2D { x: 0, y: -1 },
-                Point2D { x: 0, y: 1 },
-                Point2D { x: 1, y: 0 },
-            ],
-        )
+        self.adjecent_with_offsets(width_bound, height_bound, &Self::ADJACENT_OFFSETS)
     }
 
     pub fn adjecent_with_diagonals(
@@ -54,20 +65,11 @@ impl Point2D {
         self.adjecent_with_offsets(
             width_bound,
             height_bound,
-            &[
-                Point2D { x: -1, y: -1 },
-                Point2D { x: -1, y: 0 },
-                Point2D { x: -1, y: 1 },
-                Point2D { x: 0, y: -1 },
-                Point2D { x: 0, y: 1 },
-                Point2D { x: 1, y: -1 },
-                Point2D { x: 1, y: 0 },
-                Point2D { x: 1, y: 1 },
-            ],
+            &Self::ADJACENT_WITH_DIAGONAL_OFFSETS,
         )
     }
 
-    pub fn manhattan_distance(&self, other: &Self) -> usize {
+    pub const fn manhattan_distance(&self, other: &Self) -> u64 {
         self.x.abs_diff(other.x) + self.y.abs_diff(other.y)
     }
 }
@@ -94,12 +96,70 @@ impl Add<Point2D> for Point2D {
     }
 }
 
+impl AddAssign<Point2D> for Point2D {
+    fn add_assign(&mut self, rhs: Point2D) {
+        self.x += rhs.x;
+        self.y += rhs.y;
+    }
+}
+
+impl Sub<Point2D> for Point2D {
+    type Output = Self;
+
+    fn sub(self, other: Self) -> Self::Output {
+        Point2D {
+            x: self.x - other.x,
+            y: self.y - other.y,
+        }
+    }
+}
+
+impl Mul<i64> for Point2D {
+    type Output = Self;
+
+    fn mul(self, rhs: i64) -> Self::Output {
+        Point2D {
+            x: self.x * rhs,
+            y: self.y * rhs,
+        }
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Direction {
     North,
     South,
     West,
     East,
+}
+
+impl Direction {
+    pub const fn as_offset(&self) -> Point2D {
+        match self {
+            Direction::North => Point2D { x: 0, y: -1 },
+            Direction::South => Point2D { x: 0, y: 1 },
+            Direction::West => Point2D { x: -1, y: 0 },
+            Direction::East => Point2D { x: 1, y: 0 },
+        }
+    }
+
+    pub const fn left(&self) -> Direction {
+        match self {
+            Direction::North => Direction::West,
+            Direction::South => Direction::East,
+            Direction::West => Direction::South,
+            Direction::East => Direction::North,
+        }
+    }
+
+    pub const fn right(&self) -> Direction {
+        match self {
+            Direction::North => Direction::East,
+            Direction::South => Direction::West,
+            Direction::West => Direction::North,
+            Direction::East => Direction::South,
+        }
+    }
 }
 
 // TODO: bitvec for Map<bool>
@@ -182,6 +242,11 @@ impl<T> Map<T> {
 
     pub fn rows(&self) -> impl Iterator<Item = &[T]> {
         (0..self.height).map(|row| self.row(row))
+    }
+
+    pub fn contains(&self, point: &Point2D) -> bool {
+        (0..self.width()).contains(&(point.x as usize))
+            && (0..self.height()).contains(&(point.y as usize))
     }
 }
 
