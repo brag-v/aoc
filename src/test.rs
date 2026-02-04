@@ -501,3 +501,48 @@ F11",
         "286"
     )
 }
+
+#[test]
+fn test_day13_task1() {
+    assert_task!(
+        day13::task1,
+        "939
+7,13,x,x,59,x,31,19",
+        "295"
+    )
+}
+
+#[test]
+fn test_day13_task2() {
+    assert_task!(
+        day13::task2,
+        "0
+17,x,13,19",
+        "3417"
+    );
+
+    assert_task!(
+        day13::task2,
+        "0
+67,7,59,61",
+        "754018"
+    );
+    assert_task!(
+        day13::task2,
+        "0
+67,x,7,59,61",
+        "779210"
+    );
+    assert_task!(
+        day13::task2,
+        "0
+67,7,x,59,61",
+        "1261476"
+    );
+    assert_task!(
+        day13::task2,
+        "0
+1789,37,47,1889",
+        "1202161486"
+    );
+}
