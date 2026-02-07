@@ -546,3 +546,28 @@ fn test_day13_task2() {
         "1202161486"
     );
 }
+
+
+#[test]
+fn test_day14_task1() {
+    assert_task!(
+        day14::task1,
+"mask = XXXXXXXXXXXXXXXXXXXXXXXXXXXXX1XXXX0X
+mem[8] = 11
+mem[7] = 101
+mem[8] = 0",
+        "165"
+    )
+}
+
+#[test]
+fn test_day14_task2() {
+    assert_task!(
+        day14::task2,
+"mask = 000000000000000000000000000000X1001X
+mem[42] = 100
+mask = 00000000000000000000000000000000X0XX
+mem[26] = 1",
+        "208"
+    )
+}
