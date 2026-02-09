@@ -547,12 +547,11 @@ fn test_day13_task2() {
     );
 }
 
-
 #[test]
 fn test_day14_task1() {
     assert_task!(
         day14::task1,
-"mask = XXXXXXXXXXXXXXXXXXXXXXXXXXXXX1XXXX0X
+        "mask = XXXXXXXXXXXXXXXXXXXXXXXXXXXXX1XXXX0X
 mem[8] = 11
 mem[7] = 101
 mem[8] = 0",
@@ -564,10 +563,31 @@ mem[8] = 0",
 fn test_day14_task2() {
     assert_task!(
         day14::task2,
-"mask = 000000000000000000000000000000X1001X
+        "mask = 000000000000000000000000000000X1001X
 mem[42] = 100
 mask = 00000000000000000000000000000000X0XX
 mem[26] = 1",
         "208"
     )
+}
+
+#[test]
+fn test_day15_task1() {
+    assert_task!(day15::task1, "1,3,2", "1");
+    assert_task!(day15::task1, "2,1,3", "10");
+    assert_task!(day15::task1, "1,2,3", "27");
+    assert_task!(day15::task1, "2,3,1", "78");
+    assert_task!(day15::task1, "3,2,1", "438");
+    assert_task!(day15::task1, "3,1,2", "1836");
+}
+
+#[test]
+fn test_day15_task2() {
+    assert_task!(day15::task2, "0,3,6", "175594");
+    assert_task!(day15::task2, "1,3,2", "2578");
+    assert_task!(day15::task2, "2,1,3", "3544142");
+    assert_task!(day15::task2, "1,2,3", "261214");
+    assert_task!(day15::task2, "2,3,1", "6895259");
+    assert_task!(day15::task2, "3,2,1", "18");
+    assert_task!(day15::task2, "3,1,2", "362");
 }
