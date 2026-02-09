@@ -12,7 +12,7 @@ fn number_at_turn(starting_nums: &str, final_turn: usize) -> usize {
     for turn in turn..=final_turn {
         let number_seen = number_turns.insert(prev_num, turn - 1);
         match number_seen {
-            Some(prev_trun) => prev_num = turn - 1 - prev_trun,
+            Some(prev_turn) => prev_num = turn - 1 - prev_turn,
             None => prev_num = 0,
         }
     }
