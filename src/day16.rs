@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 #[derive(Debug, PartialEq, Eq)]
 struct TicketField<'a> {
     name: &'a str,
@@ -46,6 +48,33 @@ pub fn task1(input: &str) -> String {
         .to_string()
 }
 
+/// ac3 algorithm for filtering domain of variables
+fn ac3<T: Clone + Eq>(constraints: &mut [Vec<T>]) {
+    let mut constrained_assignments =
+        VecDeque::from_iter(constraints.iter().cloned().filter_map(|domain| {
+            if domain.len() == 1 {
+                Some(domain[0].clone())
+            } else {
+                None
+            }
+        }));
+    while let Some(constrained_assignment) = constrained_assignments.pop_front() {
+        for domain in &mut *constraints {
+            if domain.len() == 1 {
+                continue;
+            }
+            *domain = domain
+                .iter()
+                .filter(|assignment| **assignment != constrained_assignment)
+                .cloned()
+                .collect::<Vec<T>>();
+            if domain.len() == 1 {
+                constrained_assignments.push_back(domain[0].clone());
+            }
+        }
+    }
+}
+
 pub fn task2(input: &str) -> String {
     let sections: Box<[&str]> = input.split("\n\n").collect();
     let ticket_fields = parse_fields(sections[0]);
@@ -91,42 +120,11 @@ pub fn task2(input: &str) -> String {
         field_mapping.push(field);
     }
 
-    // ac-3 algorithm?
-    loop {
-        // TODO: change single field to queue, 
-        // run while queue is not empty
-        let single_fields: Box<[&TicketField]> = field_mapping
-            .iter()
-            .filter_map(|mapping| {
-                if mapping.len() == 1 {
-                    Some(mapping[0])
-                } else {
-                    None
-                }
-            })
-            .collect();
+    // for this task, the ac3 algorithm is enough to find
+    // a single mapping between columns and ticket fileds
+    ac3(&mut field_mapping);
 
-
-        let mut changed = false;
-        for mapping in &mut field_mapping {
-            let old_length = mapping.len();
-            if old_length == 1 {
-                continue;
-            }
-            *mapping = mapping
-                .iter()
-                .cloned()
-                .filter(|field| !single_fields.contains(field))
-                .collect::<Vec<&TicketField>>();
-            if mapping.len() != old_length {
-                changed = true;
-            }
-        }
-
-        if !changed {
-            break;
-        }
-    }
+    debug_assert!(field_mapping.iter().all(|mapping| mapping.len() == 1));
 
     // solve task (product of ticket fields starting with departure)
     let your_ticket = sections[1].split_once('\n').unwrap().1;
