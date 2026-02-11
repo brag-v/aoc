@@ -1,5 +1,3 @@
-use std::collections::VecDeque;
-
 #[derive(Debug, PartialEq, Eq)]
 struct TicketField<'a> {
     name: &'a str,
@@ -49,18 +47,21 @@ pub fn task1(input: &str) -> String {
 }
 
 /// ac3 algorithm for filtering domain of variables
-fn ac3<T: Clone + Eq>(constraints: &mut [Vec<T>]) {
-    let mut constrained_assignments =
-        VecDeque::from_iter(constraints.iter().cloned().filter_map(|domain| {
-            if domain.len() == 1 {
-                Some(domain[0].clone())
-            } else {
-                None
-            }
-        }));
-    while let Some(constrained_assignment) = constrained_assignments.pop_front() {
-        for domain in &mut *constraints {
-            if domain.len() == 1 {
+/// where every variable must have an unique assignment
+fn ac3<T: Clone + Eq>(domains: &mut [Vec<T>]) {
+    let mut assigned = vec![false; domains.len()];
+    let mut assigned_values = Vec::new();
+    if let Some((i, singelton_domain)) = domains
+        .iter()
+        .enumerate()
+        .find(|(_, domain)| domain.len() == 1)
+    {
+        assigned_values.push(singelton_domain[0].clone());
+        assigned[i] = true;
+    }
+    while let Some(constrained_assignment) = assigned_values.pop() {
+        for (i, domain) in domains.iter_mut().enumerate() {
+            if assigned[i] {
                 continue;
             }
             *domain = domain
@@ -69,7 +70,8 @@ fn ac3<T: Clone + Eq>(constraints: &mut [Vec<T>]) {
                 .cloned()
                 .collect::<Vec<T>>();
             if domain.len() == 1 {
-                constrained_assignments.push_back(domain[0].clone());
+                assigned_values.push(domain[0].clone());
+                assigned[i] = true;
             }
         }
     }
@@ -85,20 +87,20 @@ pub fn task2(input: &str) -> String {
         .lines()
         .skip(1)
         .filter_map(|ticket| {
-            let fields: Box<[u32]> = ticket
+            let values: Box<[u32]> = ticket
                 .split(',')
                 .map(|value| value.parse().unwrap())
                 .collect();
-            if fields.iter().any(|value| {
-                !ticket_fields
+            if values.iter().all(|value| {
+                ticket_fields
                     .iter()
                     .flat_map(|field| field.ranges.iter())
                     .any(|(lower_bound, upper_bound)| (lower_bound..=upper_bound).contains(&value))
             }) {
-                None
+                debug_assert_eq!(values.len(), n);
+                Some(values)
             } else {
-                debug_assert_eq!(fields.len(), n);
-                Some(fields)
+                None
             }
         })
         .collect();
