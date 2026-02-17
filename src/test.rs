@@ -612,3 +612,26 @@ nearby tickets:
         "71"
     )
 }
+
+#[test]
+fn test_day17_task1() {
+    assert_task!(
+        day17::task1,
+        ".#.
+..#
+###",
+        "112"
+    )
+}
+
+
+#[test]
+fn test_day17_task2() {
+    assert_task!(
+        day17::task2,
+        ".#.
+..#
+###",
+        "848"
+    )
+}
