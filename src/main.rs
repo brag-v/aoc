@@ -1,5 +1,5 @@
 use phf::phf_map;
-use std::{collections::HashMap, env, error::Error, fs::read_to_string, time::Instant};
+use std::{env, error::Error, fs::read_to_string, time::Instant};
 
 #[cfg(test)]
 mod test;
