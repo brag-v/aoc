@@ -16,23 +16,25 @@ struct GridND {
 
 impl GridND {
     fn neighboorhood(&self, src: usize) -> Vec<usize> {
-        let mut neighboorhood = vec![src];
+        let mut neighboorhood = Vec::with_capacity(3usize.pow(self.dimentions.len() as u32));
+        neighboorhood.push(src);
         // build neighboorhood by iterativly extruding
         // neighboorhood forward and backwards in each dimention
+        let mut dimention_offset = 1;
         for i in 0..self.dimentions.len() {
-            let offset = self.dimentions[..i].iter().product();
             for j in 0..neighboorhood.len() {
                 // NB: wraps around board in all but the last dimention
                 // should not be a problem since board shouldn't be
                 // iterated with active cells along the edges
-                let forward = neighboorhood[j] + offset;
+                let forward = neighboorhood[j] + dimention_offset;
                 if forward < self.grid.len() {
                     neighboorhood.push(forward);
                 }
-                if let Some(backward) = neighboorhood[j].checked_sub(offset) {
+                if let Some(backward) = neighboorhood[j].checked_sub(dimention_offset) {
                     neighboorhood.push(backward);
                 }
             }
+            dimention_offset *= self.dimentions[i];
         }
         neighboorhood
     }
