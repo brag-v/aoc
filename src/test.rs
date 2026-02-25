@@ -624,7 +624,6 @@ fn test_day17_task1() {
     )
 }
 
-
 #[test]
 fn test_day17_task2() {
     assert_task!(
@@ -634,4 +633,37 @@ fn test_day17_task2() {
 ###",
         "848"
     )
+}
+
+#[test]
+fn test_day18_task1() {
+    assert_task!(day18::task1, "2 * 3 + (4 * 5)", "26");
+    assert_task!(day18::task1, "5 + (8 * 3 + 9 + 3 * 4 * 3)", "437");
+    assert_task!(
+        day18::task1,
+        "5 * 9 * (7 * 3 * 3 + 9 * 3 + (8 + 6 * 4))",
+        "12240"
+    );
+    assert_task!(
+        day18::task1,
+        "((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6) + 2 + 4 * 2",
+        "13632"
+    );
+}
+
+#[test]
+fn test_day18_task2() {
+    assert_task!(day18::task2, "1 + (2 * 3) + (4 * (5 + 6))", "51");
+    assert_task!(day18::task2, "2 * 3 + (4 * 5)", "46");
+    assert_task!(day18::task2, "5 + (8 * 3 + 9 + 3 * 4 * 3)", "1445");
+    assert_task!(
+        day18::task2,
+        "5 * 9 * (7 * 3 * 3 + 9 * 3 + (8 + 6 * 4))",
+        "669060"
+    );
+    assert_task!(
+        day18::task2,
+        "((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6) + 2 + 4 * 2",
+        "23340"
+    );
 }
