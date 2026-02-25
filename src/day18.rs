@@ -1,3 +1,5 @@
+use itertools::Itertools;
+
 #[derive(Debug)]
 enum Operation {
     Add,
@@ -5,12 +7,18 @@ enum Operation {
 }
 use Operation as Op;
 
+fn tokens(line: &str) -> impl Iterator<Item = &str> {
+    line.split_whitespace()
+        // ugly-ish way to split on the "space" between patenthesis while keeping them as tokens
+        .flat_map(|word| Itertools::intersperse(word.split('('), "(").filter(|s| !s.is_empty()))
+        .flat_map(|word| Itertools::intersperse(word.split(')'), ")").filter(|s| !s.is_empty()))
+}
+
 fn evaluate_left_precedence(line: &str) -> u64 {
-    let line = line.replace(")", " )").replace("(", "( "); // 🤮 
     let mut value_stack = vec![];
     let mut value = 0;
     let mut op = Op::Add;
-    for symbol in line.split_whitespace() {
+    for symbol in tokens(line) {
         match symbol {
             "+" => op = Op::Add,
             "*" => op = Op::Mul,
@@ -47,12 +55,11 @@ pub fn task1(input: &str) -> String {
 }
 
 fn evaluate_add_precedence(line: &str) -> u64 {
-    let line = line.replace(")", " )").replace("(", "( "); // 🤮 
     let mut paren_stack = vec![];
     let mut factor = 1;
     let mut product = 1;
     let mut op = Op::Mul;
-    for symbol in line.split_whitespace() {
+    for symbol in tokens(line) {
         match symbol {
             "+" => op = Op::Add,
             "*" => {
