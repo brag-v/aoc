@@ -46,9 +46,12 @@ fn valid_prefixes_rule_sequence(
                 new_prefix_lengths.push(prefix_length + added_length);
             }
         }
+        if new_prefix_lengths.is_empty() {
+            return Box::new([]);
+        }
+        new_prefix_lengths.sort_unstable();
+        new_prefix_lengths.dedup();
         prefix_lengths = new_prefix_lengths;
-        prefix_lengths.sort_unstable();
-        prefix_lengths.dedup();
     }
     prefix_lengths.into_boxed_slice()
 }
