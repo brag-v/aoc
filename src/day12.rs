@@ -1,4 +1,4 @@
-use crate::grid::{Direction, Point2D};
+use crate::geometry::{Direction, Point2D};
 
 pub fn task1(input: &str) -> String {
     let mut direction = Direction::East;
