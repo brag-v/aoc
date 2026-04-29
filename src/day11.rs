@@ -1,4 +1,4 @@
-use crate::grid::{Map, Point2D};
+use crate::geometry::{Grid, Point2D};
 
 // TODO: calculate seat neighbors during construction,
 // which us used to iterate the plane, rather than passing the update rule
@@ -10,7 +10,7 @@ enum Tile {
     Occupied,
 }
 
-fn new_seat_immediate_neighbors(pos: Point2D, plane: &Map<Tile>) -> Tile {
+fn new_seat_immediate_neighbors(pos: Point2D, plane: &Grid<Tile>) -> Tile {
     match plane[pos] {
         Tile::Floor => Tile::Floor,
         Tile::Empty => {
@@ -39,9 +39,9 @@ fn new_seat_immediate_neighbors(pos: Point2D, plane: &Map<Tile>) -> Tile {
 }
 
 fn iterate_plane(
-    prev_plane: &Map<Tile>,
-    next_plane: &mut Map<Tile>,
-    next_seat_rule: &impl Fn(Point2D, &Map<Tile>) -> Tile,
+    prev_plane: &Grid<Tile>,
+    next_plane: &mut Grid<Tile>,
+    next_seat_rule: &impl Fn(Point2D, &Grid<Tile>) -> Tile,
 ) -> bool {
     let mut changed = false;
     for y in 0..prev_plane.height() {
@@ -60,14 +60,14 @@ fn iterate_plane(
     changed
 }
 
-fn stable_occupancy(input: &str, next_seat_rule: &impl Fn(Point2D, &Map<Tile>) -> Tile) -> String {
-    let mut plane = &mut Map::try_from_str(input, |tile| match tile {
+fn stable_occupancy(input: &str, next_seat_rule: &impl Fn(Point2D, &Grid<Tile>) -> Tile) -> String {
+    let mut plane = &mut Grid::try_from_str(input, |tile| match tile {
         'L' => Some(Tile::Empty),
         '.' => Some(Tile::Floor),
         _ => None,
     })
     .unwrap();
-    let mut next_plane = &mut Map::filled_with(Tile::Empty, plane.width(), plane.height());
+    let mut next_plane = &mut Grid::filled_with(Tile::Empty, plane.width(), plane.height());
     while iterate_plane(plane, next_plane, next_seat_rule) {
         (plane, next_plane) = (next_plane, plane);
     }
@@ -83,7 +83,7 @@ pub fn task1(input: &str) -> String {
     stable_occupancy(input, &new_seat_immediate_neighbors)
 }
 
-fn sees_occupied(start: &Point2D, direction: &Point2D, plane: &Map<Tile>) -> bool {
+fn sees_occupied(start: &Point2D, direction: &Point2D, plane: &Grid<Tile>) -> bool {
     let mut pos = *start + *direction;
     while plane.contains(&pos) {
         match plane[pos] {
@@ -96,7 +96,7 @@ fn sees_occupied(start: &Point2D, direction: &Point2D, plane: &Map<Tile>) -> boo
     false
 }
 
-fn new_seat_visible_neighbors(pos: Point2D, plane: &Map<Tile>) -> Tile {
+fn new_seat_visible_neighbors(pos: Point2D, plane: &Grid<Tile>) -> Tile {
     match plane[pos] {
         Tile::Floor => Tile::Floor,
         Tile::Empty => {

@@ -743,3 +743,27 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba",
         "12"
     )
 }
+
+#[test]
+fn test_day21_task1() {
+    assert_task!(
+        day21::task1,
+        "mxmxvkd kfcds sqjhc nhms (contains dairy, fish)
+trh fvjkl sbzzf mxmxvkd (contains dairy)
+sqjhc fvjkl (contains soy)
+sqjhc mxmxvkd sbzzf (contains fish)",
+        "5"
+    )
+}
+
+#[test]
+fn test_day21_task2() {
+    assert_task!(
+        day21::task2,
+        "mxmxvkd kfcds sqjhc nhms (contains dairy, fish)
+trh fvjkl sbzzf mxmxvkd (contains dairy)
+sqjhc fvjkl (contains soy)
+sqjhc mxmxvkd sbzzf (contains fish)",
+        "mxmxvkd,sqjhc,fvjkl"
+    )
+}

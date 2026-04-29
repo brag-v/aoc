@@ -4,7 +4,8 @@ use std::{env, error::Error, fs::read_to_string, time::Instant};
 #[cfg(test)]
 mod test;
 
-mod grid;
+mod ac3;
+mod geometry;
 
 mod day01;
 mod day02;
