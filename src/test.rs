@@ -789,3 +789,25 @@ Player 2:
         "306"
     )
 }
+
+
+#[test]
+fn test_day22_task2() {
+    assert_task!(
+        day22::task2,
+"Player 1:
+9
+2
+6
+3
+1
+
+Player 2:
+5
+8
+4
+7
+10",
+        "291"
+    )
+}
