@@ -37,12 +37,12 @@ fn play_combat<'a>(deck_1: &'a mut VecDeque<u8>, deck_2: &'a mut VecDeque<u8>) -
     if deck_1.is_empty() { deck_2 } else { deck_1 }
 }
 
-fn calculate_score(deck: &VecDeque<u8>) -> u8 {
+fn calculate_score(deck: &VecDeque<u8>) -> usize {
     deck.iter()
         .rev()
         .enumerate()
         .fold(0, |acc, (position, value)| {
-            acc + (position as u8 + 1) * value
+            acc + (position + 1) * *value as usize
         })
 }
 
