@@ -52,8 +52,12 @@ pub fn task1(input: &str) -> String {
     calculate_score(winner).to_string()
 }
 
-fn decks_to_key(deck_1: &mut VecDeque<u8>, deck_2: &mut VecDeque<u8>) -> Box<[u8]> {
-    deck_1.iter().chain(deck_2.iter()).cloned().collect()
+fn decks_to_key(deck_1: &VecDeque<u8>, deck_2: &VecDeque<u8>) -> Box<[u8]> {
+    let mut key = Vec::with_capacity(deck_1.len() + 1 + deck_2.len());
+    key.extend(deck_1.iter());
+    key.push(0);
+    key.extend(deck_2.iter());
+    key.into_boxed_slice()
 }
 
 fn play_recursive_combat_round(deck_1: &mut VecDeque<u8>, deck_2: &mut VecDeque<u8>) {
