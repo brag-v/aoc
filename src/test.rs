@@ -582,15 +582,15 @@ fn test_day15_task1() {
 }
 
 #[test]
+#[ignore] // performance
 fn test_day15_task2() {
-    // disable test until 15.2 is faster
-    // assert_task!(day15::task2, "0,3,6", "175594");
-    // assert_task!(day15::task2, "1,3,2", "2578");
-    // assert_task!(day15::task2, "2,1,3", "3544142");
-    // assert_task!(day15::task2, "1,2,3", "261214");
-    // assert_task!(day15::task2, "2,3,1", "6895259");
-    // assert_task!(day15::task2, "3,2,1", "18");
-    // assert_task!(day15::task2, "3,1,2", "362");
+    assert_task!(day15::task2, "0,3,6", "175594");
+    assert_task!(day15::task2, "1,3,2", "2578");
+    assert_task!(day15::task2, "2,1,3", "3544142");
+    assert_task!(day15::task2, "1,2,3", "261214");
+    assert_task!(day15::task2, "2,3,1", "6895259");
+    assert_task!(day15::task2, "3,2,1", "18");
+    assert_task!(day15::task2, "3,1,2", "362");
 }
 
 #[test]
@@ -688,12 +688,11 @@ aaaabbb",
     )
 }
 
-
 #[test]
 fn test_day19_task2() {
     assert_task!(
         day19::task2,
-"42: 9 14 | 10 1
+        "42: 9 14 | 10 1
 9: 14 27 | 1 26
 10: 23 14 | 28 1
 1: \"a\"
@@ -768,12 +767,11 @@ sqjhc mxmxvkd sbzzf (contains fish)",
     )
 }
 
-
 #[test]
 fn test_day22_task1() {
     assert_task!(
         day22::task1,
-"Player 1:
+        "Player 1:
 9
 2
 6
@@ -790,12 +788,11 @@ Player 2:
     )
 }
 
-
 #[test]
 fn test_day22_task2() {
     assert_task!(
         day22::task2,
-"Player 1:
+        "Player 1:
 9
 2
 6
@@ -810,4 +807,15 @@ Player 2:
 10",
         "291"
     )
+}
+
+#[test]
+fn test_day23_task1() {
+    assert_task!(day23::task1, "389125467", "67384529")
+}
+
+#[test]
+#[ignore] // performance
+fn test_day23_task2() {
+    assert_task!(day23::task2, "389125467", "149245887792")
 }
