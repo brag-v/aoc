@@ -1,5 +1,6 @@
 use std::{
     cell::RefCell,
+    iter::once,
     rc::{Rc, Weak},
 };
 
@@ -20,7 +21,7 @@ fn nodes_by_value_unlinked(n: usize) -> Vec<NodeRef> {
             next: me.clone(),
         })
     }); // zero node for zero-indexing ease
-    let mut cups_by_value: Vec<Rc<RefCell<LinkedNode>>> = vec![zero_node];
+    let mut cups_by_value: Vec<NodeRef> = vec![zero_node];
     for i in 1..=n {
         cups_by_value.push(Rc::new_cyclic(|me| {
             RefCell::new(LinkedNode {
@@ -75,16 +76,21 @@ fn perfom_round(cups: &[NodeRef], current_cup: NodeRef) {
 pub fn task1(input: &str) -> String {
     let cups_by_value = nodes_by_value_unlinked(input.len());
 
-    for (a, b) in input
+    let digits: Box<[usize]> = input
         .chars()
-        .chain(input.chars().take(1)) // loop to first char
         .map(|c| c.to_digit(10).unwrap() as usize)
+        .collect();
+
+    for (a, b) in digits
+        .iter()
+        .cloned()
+        .chain(once(digits[0]))
         .tuple_windows()
     {
         cups_by_value[a].borrow_mut().next = Rc::downgrade(&cups_by_value[b]);
     }
 
-    let start_value = input.chars().next().unwrap().to_digit(10).unwrap() as usize;
+    let start_value = digits[0];
     let mut node = cups_by_value[start_value].clone();
 
     for _ in 0..100 {
@@ -106,22 +112,22 @@ pub fn task1(input: &str) -> String {
 pub fn task2(input: &str) -> String {
     let cups_by_value = nodes_by_value_unlinked(1_000_000);
 
-    for (from, to) in input
+    let digits: Box<[usize]> = input
         .chars()
         .map(|c| c.to_digit(10).unwrap() as usize)
+        .collect();
+
+    for (from, to) in digits
+        .iter()
+        .cloned()
         .chain((input.len() + 1)..=1_000_000)
-        .chain(
-            input
-                .chars()
-                .take(1)
-                .map(|c| c.to_digit(10).unwrap() as usize),
-        )
+        .chain(once(digits[0]))
         .tuple_windows()
     {
         cups_by_value[from].borrow_mut().next = Rc::downgrade(&cups_by_value[to]);
     }
 
-    let start_value = input.chars().next().unwrap().to_digit(10).unwrap() as usize;
+    let start_value = digits[0];
     let mut node = cups_by_value[start_value].clone();
 
     for _ in 0..10_000_000 {
