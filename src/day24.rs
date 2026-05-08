@@ -97,6 +97,7 @@ fn count_flipped_neighbors(pos: &Point2D, fillped_tiles: &HashSet<Point2D>) -> u
     HEXAGONAL_OFFSETS
         .iter()
         .filter(|offset| fillped_tiles.contains(&(*pos + **offset)))
+        .take(3) // we never need to count past 3
         .count()
 }
 
