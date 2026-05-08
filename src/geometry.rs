@@ -8,7 +8,7 @@ use std::{
     ops::{Add, AddAssign, Index, IndexMut, Mul, Sub},
 };
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Hash)]
 pub struct Point2D {
     pub x: i64,
     pub y: i64,

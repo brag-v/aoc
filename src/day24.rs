@@ -1,5 +1,7 @@
 use std::collections::HashSet;
 
+use crate::geometry::Point2D;
+
 #[derive(Debug)]
 enum Move {
     NW,
@@ -10,14 +12,23 @@ enum Move {
     SE,
 }
 
-const fn move_offset(m: &Move) -> (i32, i32) {
+const HEXAGONAL_OFFSETS: [Point2D; 6] = [
+    Point2D { x: 0, y: -1 },
+    Point2D { x: 1, y: -1 },
+    Point2D { x: -1, y: 0 },
+    Point2D { x: 1, y: 0 },
+    Point2D { x: -1, y: 1 },
+    Point2D { x: 0, y: 1 },
+];
+
+const fn move_offset(m: &Move) -> Point2D {
     match m {
-        Move::NW => (-1, -1),
-        Move::NE => (1, -1),
-        Move::W => (-2, 0),
-        Move::E => (2, 0),
-        Move::SW => (-1, 1),
-        Move::SE => (1, 1),
+        Move::NW => HEXAGONAL_OFFSETS[0],
+        Move::NE => HEXAGONAL_OFFSETS[1],
+        Move::W => HEXAGONAL_OFFSETS[2],
+        Move::E => HEXAGONAL_OFFSETS[3],
+        Move::SW => HEXAGONAL_OFFSETS[4],
+        Move::SE => HEXAGONAL_OFFSETS[5],
     }
 }
 
@@ -60,17 +71,15 @@ fn parse_moves(input: &str) -> Vec<Vec<Move>> {
     move_sequences
 }
 
-fn perform_moves(input: &str) -> HashSet<(i32, i32)> {
+fn perform_moves(input: &str) -> HashSet<Point2D> {
     let moves = parse_moves(input);
-    let start_pos = (0, 0);
+    let start_pos = Point2D::ZERO;
     let mut flipped_tiles = HashSet::with_capacity(input.lines().count());
     for sequence in &moves {
         // move from start
         let mut pos = start_pos;
         for m in sequence {
-            let offset = move_offset(m);
-            pos.0 += offset.0;
-            pos.1 += offset.1;
+            pos += move_offset(m);
         }
         // flip tile at destination
         if !flipped_tiles.insert(pos) {
@@ -84,23 +93,21 @@ pub fn task1(input: &str) -> String {
     perform_moves(input).len().to_string()
 }
 
-const ADJACENT_OFFSETS: [(i32, i32); 6] = [(-1, -1), (1, -1), (-2, 0), (2, 0), (-1, 1), (1, 1)];
-
-fn count_flipped_neighbors(pos: &(i32, i32), fillped_tiles: &HashSet<(i32, i32)>) -> usize {
-    ADJACENT_OFFSETS
+fn count_flipped_neighbors(pos: &Point2D, fillped_tiles: &HashSet<Point2D>) -> usize {
+    HEXAGONAL_OFFSETS
         .iter()
-        .filter(|(off_x, off_y)| fillped_tiles.contains(&(pos.0 + off_x, pos.1 + off_y)))
+        .filter(|offset| fillped_tiles.contains(&(*pos + **offset)))
         .count()
 }
 
-fn perform_day(tiles_today: &HashSet<(i32, i32)>) -> HashSet<(i32, i32)> {
+fn perform_day(tiles_today: &HashSet<Point2D>) -> HashSet<Point2D> {
     let mut tiles_tomorrow = tiles_today.clone();
-    let unflipped_tiles: HashSet<(i32, i32)> = tiles_today
+    let unflipped_tiles: HashSet<Point2D> = tiles_today
         .iter()
-        .flat_map(|(tile_x, tile_y)| {
-            ADJACENT_OFFSETS
+        .flat_map(|tile| {
+            HEXAGONAL_OFFSETS
                 .iter()
-                .map(move |(off_x, off_y)| (tile_x + off_x, tile_y + off_y))
+                .map(move |offset| *tile + *offset)
         })
         .filter(|pos| !tiles_today.contains(pos))
         .collect();
@@ -120,6 +127,8 @@ fn perform_day(tiles_today: &HashSet<(i32, i32)>) -> HashSet<(i32, i32)> {
 }
 
 pub fn task2(input: &str) -> String {
+    // TODO: change from hashset to array-based container
+    // fixed sized, or dynamic?
     let mut flipped_tiles = perform_moves(input);
     for _day in 0..100 {
         flipped_tiles = perform_day(&flipped_tiles);
