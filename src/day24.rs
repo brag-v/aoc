@@ -35,7 +35,7 @@ const fn move_offset(m: &Move) -> Point2D {
 fn parse_moves(input: &str) -> Vec<Vec<Move>> {
     enum NextMove {
         North,
-        Sourth,
+        South,
         Default,
     }
     use NextMove::*;
@@ -46,11 +46,11 @@ fn parse_moves(input: &str) -> Vec<Vec<Move>> {
         for c in line.chars() {
             match c {
                 'n' => next_move = North,
-                's' => next_move = Sourth,
+                's' => next_move = South,
                 'e' => {
                     match next_move {
                         North => move_sequence.push(Move::NE),
-                        Sourth => move_sequence.push(Move::SE),
+                        South => move_sequence.push(Move::SE),
                         Default => move_sequence.push(Move::E),
                     }
                     next_move = Default;
@@ -58,7 +58,7 @@ fn parse_moves(input: &str) -> Vec<Vec<Move>> {
                 'w' => {
                     match next_move {
                         North => move_sequence.push(Move::NW),
-                        Sourth => move_sequence.push(Move::SW),
+                        South => move_sequence.push(Move::SW),
                         Default => move_sequence.push(Move::W),
                     }
                     next_move = Default;
@@ -104,11 +104,7 @@ fn perform_day(tiles_today: &HashSet<Point2D>) -> HashSet<Point2D> {
     let mut tiles_tomorrow = tiles_today.clone();
     let unflipped_tiles: HashSet<Point2D> = tiles_today
         .iter()
-        .flat_map(|tile| {
-            HEXAGONAL_OFFSETS
-                .iter()
-                .map(move |offset| *tile + *offset)
-        })
+        .flat_map(|tile| HEXAGONAL_OFFSETS.iter().map(move |offset| *tile + *offset))
         .filter(|pos| !tiles_today.contains(pos))
         .collect();
     for pos in tiles_today.iter() {
