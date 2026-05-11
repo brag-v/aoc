@@ -1,8 +1,6 @@
-use std::collections::{HashMap, HashSet};
-
+use crate::ac3::ac3;
 use itertools::Itertools;
-
-use crate::{ac3::ac3, day16};
+use std::collections::{HashMap, HashSet};
 
 #[derive(Debug)]
 struct Food {
@@ -31,11 +29,11 @@ fn parse_food_list(input: &str) -> Vec<Food> {
 }
 
 fn possible_allergen_containers(foods: &[Food]) -> HashMap<&str, HashSet<&str>> {
-    let mut mapping = HashMap::new();
+    let mut allergen_containers = HashMap::new();
     for food in foods {
         let ingredient_set: HashSet<&str> = food.ingredients.iter().map(|s| s.as_ref()).collect();
         for allergen in &food.allergens {
-            mapping
+            allergen_containers
                 .entry(allergen.as_ref())
                 .and_modify(|ingredients: &mut HashSet<&str>| {
                     ingredients.retain(|ingredient| ingredient_set.contains(ingredient))
@@ -43,7 +41,7 @@ fn possible_allergen_containers(foods: &[Food]) -> HashMap<&str, HashSet<&str>> 
                 .or_insert(ingredient_set.clone());
         }
     }
-    mapping
+    allergen_containers
 }
 
 pub fn task1(input: &str) -> String {
@@ -68,18 +66,11 @@ pub fn task2(input: &str) -> String {
     let foods = parse_food_list(input);
     let mapping = possible_allergen_containers(&foods);
     let sorted_allergens = mapping.keys().sorted_unstable();
-    let mut sorted_ingredients: Vec<Vec<&str>> = sorted_allergens
-        .map(|allergen| {
-            mapping
-                .get(allergen)
-                .unwrap()
-                .iter()
-                .map(|s| *s)
-                .collect::<Vec<&str>>()
-        })
+    let mut sorted_container_lists: Vec<Vec<&str>> = sorted_allergens
+        .map(|allergen| mapping.get(allergen).unwrap().iter().copied().collect())
         .collect();
-    ac3(&mut sorted_ingredients);
-    sorted_ingredients
+    ac3(&mut sorted_container_lists);
+    sorted_container_lists
         .iter()
         .map(|ingredient_list| ingredient_list[0])
         .join(",")

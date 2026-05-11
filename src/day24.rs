@@ -111,7 +111,7 @@ fn perform_day(tiles_today: &HashSet<Point2D>) -> HashSet<Point2D> {
     for pos in tiles_today.iter() {
         let flipped_neighbours = count_flipped_neighbors(pos, tiles_today);
         if flipped_neighbours == 0 || flipped_neighbours > 2 {
-            tiles_tomorrow.remove(&pos);
+            tiles_tomorrow.remove(pos);
         }
     }
     for pos in unflipped_tiles.iter() {

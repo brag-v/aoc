@@ -26,5 +26,5 @@ pub fn task1(input: &str) -> String {
 pub fn task2(input: &str) -> String {
     // TODO: takes almost 2 seconds in --release
     // test takes almost a minute
-    number_at_turn(input, 30000000).to_string()
+    number_at_turn(input, 30_000_000).to_string()
 }

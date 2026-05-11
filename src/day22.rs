@@ -64,14 +64,13 @@ fn play_recursive_combat_round(deck_1: &mut VecDeque<u8>, deck_2: &mut VecDeque<
     let card_1 = deck_1.pop_front().unwrap();
     let card_2 = deck_2.pop_front().unwrap();
 
-    let player_1_wins;
-    if card_1 as usize <= deck_1.len() && card_2 as usize <= deck_2.len() {
+    let player_1_wins = if card_1 as usize <= deck_1.len() && card_2 as usize <= deck_2.len() {
         let mut subdeck_1 = deck_1.iter().take(card_1 as usize).cloned().collect();
         let mut subdeck_2 = deck_2.iter().take(card_2 as usize).cloned().collect();
-        player_1_wins = play_recursive_combat(&mut subdeck_1, &mut subdeck_2);
+        play_recursive_combat(&mut subdeck_1, &mut subdeck_2)
     } else {
-        player_1_wins = card_1 > card_2;
-    }
+        card_1 > card_2
+    };
     if player_1_wins {
         deck_1.push_back(card_1);
         deck_1.push_back(card_2);
@@ -81,7 +80,7 @@ fn play_recursive_combat_round(deck_1: &mut VecDeque<u8>, deck_2: &mut VecDeque<
     }
 }
 
-fn play_recursive_combat<'a>(deck_1: &mut VecDeque<u8>, deck_2: &mut VecDeque<u8>) -> bool {
+fn play_recursive_combat(deck_1: &mut VecDeque<u8>, deck_2: &mut VecDeque<u8>) -> bool {
     let mut prev_hands = HashSet::new();
     while !deck_1.is_empty() && !deck_2.is_empty() {
         if !prev_hands.insert(decks_to_key(deck_1, deck_2)) {
@@ -91,6 +90,7 @@ fn play_recursive_combat<'a>(deck_1: &mut VecDeque<u8>, deck_2: &mut VecDeque<u8
     }
     !deck_1.is_empty()
 }
+
 pub fn task2(input: &str) -> String {
     let (mut deck_1, mut deck_2) = parse_game_setup(input);
     let player_1_wins = play_recursive_combat(&mut deck_1, &mut deck_2);
